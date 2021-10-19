@@ -6,7 +6,7 @@
 // @contact     cesar.bernard@gmx.de
 // @homepage    https://twitter.com/CennoxX
 // @namespace   https://greasyfork.org/users/21515
-// @version     0.7
+// @version     0.8
 // @grant       none
 // ==/UserScript==
 var result = document.querySelectorAll('.yuRUbf>a');
