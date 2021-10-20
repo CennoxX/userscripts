@@ -115,7 +115,7 @@
         return track[str2.length][str1.length];
     }
     var mainLoop = setInterval(async()=>{
-        if (typeof $ != "undefined){
+        if (typeof $ != "undefined"){
             if (document.querySelector(".wikibase-labelview-text").innerText=="Keine Bezeichnung vorhanden"){
                 var oldTitle = document.querySelector(".wikibase-title-label span")?.innerText;
                 if (oldTitle != null){
