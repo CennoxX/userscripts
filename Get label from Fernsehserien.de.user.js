@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
 // @namespace    https://greasyfork.org/users/21515
-// @version      0.2.1
+// @version      0.2.2
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -40,7 +40,7 @@
         return await new Promise(resolve => {
             var stopInterval = setInterval(()=>{
                 if (deLabel != null){
-                    if (german != "–" || [...document.querySelectorAll(".wb-item-delabel")].filter(i => i.innerText=="–").length==0){
+                    if ([...document.querySelectorAll(".wb-item-delabel")].filter(i => i.innerText==german).length==0){
                         var descr = deLabel.nextElementSibling;
                         descr.innerText = `(${english})`;
                         var titleA = compareString(oldTitle);
