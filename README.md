@@ -19,6 +19,9 @@ Change the appearance of fullscreen-for-googletasks.com to resemble tasks.google
 ###### [JSON-LD from IMDb to QuickStatements](https://github.com/CennoxX/userscripts/raw/main/JSON-LD%20from%20IMDb%20to%20QuickStatements.user.js)
 Get data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
 
+###### [Get label from Fernsehserien](https://github.com/CennoxX/userscripts/raw/main/Get%20label%20from%20Fernsehserien.de.user.js)
+Offer Fernsehserien.de label based on episode number or title as Wikidata label
+
 ### deutsche Scripte
 ##### [Gmail Calender Connector](https://github.com/CennoxX/userscripts/raw/main/Gmail%20Calender%20Connector.user.js)
 Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
