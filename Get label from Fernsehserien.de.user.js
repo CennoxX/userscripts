@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
 // @namespace    https://greasyfork.org/users/21515
-// @version      0.2.2
+// @version      0.2.3
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -10,7 +10,7 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=wikidata.org
 // @grant        GM.xmlHttpRequest
 // ==/UserScript==
-/* jshint esversion: 6 */
+/* jshint esversion: 8 */
 /* eslint quotes: ["warn", "double", "avoid-escape"]*/
 /* eslint curly: "off"*/
 /* globals jQuery, $, mw */
@@ -88,7 +88,7 @@
             var dist = levenshteinDistance(titleA,titleB);
             return({ep:i,dist});
         });
-        var minDist = distMap.reduce(function(prev, curr) {
+        var minDist = distMap.reduce(function(prev, curr){
             return prev.dist < curr.dist ? prev : curr;
         });
         console.log("levenshtein distance:",minDist.dist);
@@ -96,14 +96,14 @@
     }
     function levenshteinDistance(str1, str2){
         var track = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
-        for (let i = 0; i <= str1.length; i += 1) {
+        for (let i = 0; i <= str1.length; i += 1){
             track[0][i] = i;
         }
-        for (let j = 0; j <= str2.length; j += 1) {
+        for (let j = 0; j <= str2.length; j += 1){
             track[j][0] = j;
         }
-        for (let j = 1; j <= str2.length; j += 1) {
-            for (let i = 1; i <= str1.length; i += 1) {
+        for (let j = 1; j <= str2.length; j += 1){
+            for (let i = 1; i <= str1.length; i += 1){
                 var indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
                 track[j][i] = Math.min(
                     track[j][i - 1] + 1,
@@ -115,10 +115,9 @@
         return track[str2.length][str1.length];
     }
     var mainLoop = setInterval(async()=>{
-        if (typeof $ != "undefined") {
+        if (typeof $ != "undefined){
             if (document.querySelector(".wikibase-labelview-text").innerText=="Keine Bezeichnung vorhanden"){
                 var oldTitle = document.querySelector(".wikibase-title-label span")?.innerText;
-                //todo: get labels from languages that are not fallback
                 if (oldTitle != null){
                     clearInterval(mainLoop);
                     var season = document.querySelector('[data-property-id="P4908"] .wikibase-snakview-value')?.innerText.split("/Staffel ").pop();
@@ -131,12 +130,11 @@
                     var data = await response.json();
                     var fsid = data.results.bindings[0].id.value;
                     var epGuide = `https://www.fernsehserien.de/${fsid}/episodenguide`;
-
                     //console.clear();
                     var result = await GM.xmlHttpRequest({
                         method: "GET",
                         url: epGuide,
-                        onload: function(response) {
+                        onload: function(response){
                             return response;
                         }
                     });
@@ -170,23 +168,22 @@
                         console.log("try by title, without matching numbers");
                         ep = getByTitle(ep, oldTitle, html, false);
                         if (ep){
-                            correct = await checkTitle(ep, oldTitle, false)
+                            correct = await checkTitle(ep, oldTitle, false);
                         }
                     }
                     if (!correct){
-                        console.log("get episode by levenshtein distance of title")
+                        console.log("get episode by levenshtein distance of title");
                         ep = getByLevenshteinDistance(ep, oldTitle, html);
                         if (ep){
-                            correct = await checkTitle(ep, oldTitle, false)
+                            correct = await checkTitle(ep, oldTitle, false);
                         }
                     }
-
                 }
             }
         }
     },100);
-
-    function submitDeLabel(ev) {
+	
+    function submitDeLabel(ev){
         ev.preventDefault();
         var selectedLabel = $(ev.target).text();
         console.log("selected de label: " + selectedLabel);
@@ -196,13 +193,13 @@
             "language": "de",
             "value": selectedLabel
         };
-        setItem(JSON.stringify( {
+        setItem(JSON.stringify({
             "labels": labels,
-        } ), "[de] " + selectedLabel);
+        }), selectedLabel);
     }
 
-    function setItem( item, summary ) {
-        $.ajax( {
+    function setItem(item, summary){
+        $.ajax({
             type: "POST",
             url: mw.util.wikiScript("api"),
             data: {
@@ -210,30 +207,30 @@
                 action: "wbeditentity",
                 id: itemId,
                 type: "item",
-                token: mw.user.tokens.get( "csrfToken" ),
+                token: mw.user.tokens.get("csrfToken"),
                 data: item,
-                summary: "Get Label from Fernsehserien.de: " + summary,
+                summary: "set de label from Fernsehserien.de: " + summary,
                 exclude: "pageid|ns|title|lastrevid|touched|sitelinks"
             }
-        } )
-            .done( function ( data ) {
-            if ( data.hasOwnProperty( "error" ) ) {
-                mw.notify( "API Error" + JSON.stringify( data ), { title: "add label", tag: "fs" } );
-                $( "#green-box" ).empty();
-                $( "#red-box" ).empty();
-                $( "#red-box" ).append( data.error.info.replace( /\n/g, " " ) );
+        })
+            .done(function (data){
+            if (data.hasOwnProperty("error")){
+                mw.notify("API Error" + JSON.stringify(data), {title: "add label", tag: "fs"});
+                $("#green-box").empty();
+                $("#red-box").empty();
+                $("#red-box").append(data.error.info.replace(/\n/g, " "));
             } else {
-                $( "#green-box" ).empty();
-                $( "#green-box" ).append( summary );
-                mw.notify("sent", { title: "add label", tag: "fs" } );
+                $("#green-box").empty();
+                $("#green-box").append(summary);
+                mw.notify("sent", {title: "add label", tag: "fs"});
                 window.location.reload(true);
             }
-        } )
-            .fail( function () {
-            mw.notify( "API Error", { title: "add label", tag: "fs" } );
-            $( "#green-box" ).empty();
-            $( "#red-box" ).empty();
-            $( "#red-box" ).append( "API Error" );
-        } );
+        })
+            .fail(function (){
+            mw.notify("API Error", {title: "add label", tag: "fs"});
+            $("#green-box").empty();
+            $("#red-box").empty();
+            $("#red-box").append("API Error");
+        });
     }
 })();
