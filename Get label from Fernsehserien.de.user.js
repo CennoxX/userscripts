@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
 // @namespace    https://greasyfork.org/users/21515
-// @version      0.2.3
+// @version      0.2.4
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
-// @homepage     https://twitter.com/CennoxX
+// @homepage     https://github.com/CennoxX/userscripts/
 // @match        https://www.wikidata.org/wiki/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=wikidata.org
 // @grant        GM.xmlHttpRequest
@@ -126,9 +126,9 @@
                     if (episode != null)
                         episodeNumber = season+"x"+(episode[1]?"":"0")+episode;
                     var series = document.querySelector('[data-property-id="P179"] .wikibase-snakview-value a').href.split("/")[4];
-                    var response = await fetch(`https://query.wikidata.org/sparql?query=SELECT%20*%20WHERE%20%7B%0A%20%20wd%3A${series}%20wdt%3AP5327%20%3Fid.%0A%7D&format=json`);
+                    var response = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=claims&ids=${series}`);
                     var data = await response.json();
-                    var fsid = data.results.bindings[0].id.value;
+                    var fsid = data.entities[series].claims.P5327[0].mainsnak.datavalue.value;
                     var epGuide = `https://www.fernsehserien.de/${fsid}/episodenguide`;
                     //console.clear();
                     var result = await GM.xmlHttpRequest({
@@ -182,7 +182,7 @@
             }
         }
     },100);
-	
+
     function submitDeLabel(ev){
         ev.preventDefault();
         var selectedLabel = $(ev.target).text();
