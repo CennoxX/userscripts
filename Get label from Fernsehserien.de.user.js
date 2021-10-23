@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
 // @namespace    https://greasyfork.org/users/21515
-// @version      0.3.0
+// @version      0.4.0
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -18,7 +18,9 @@
 (function(){
     "use strict";
     var correct = false;
-    var added = false;
+    var fsid = "";
+    var seriesId = "";
+    var fsidNotSet = false;
     var itemId = mw.config.get("wbEntityId");
     if (!itemId){
         return;
@@ -126,10 +128,14 @@
                     if (episode != null)
                         episodeNumber = season+"x"+(episode[1]?"":"0")+episode;
                     var series = document.querySelector('[data-property-id="P179"] .wikibase-snakview-value a');
-                    var seriesId = series.href.split("/")[4];
+                    seriesId = series.href.split("/")[4];
                     var response = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=claims&ids=${seriesId}`);
                     var data = await response.json();
-                    var fsid = data.entities[seriesId].claims.P5327?.[0].mainsnak.datavalue.value ?? series.innerText.toLowerCase().replace(" ","-"); //todo: check if assumed link exists
+                    fsid = data.entities[seriesId].claims.P5327?.[0].mainsnak.datavalue.value;
+					fsidNotSet = fsid == null;
+                    if (fsidNotSet){
+                        fsid = series.innerText.toLowerCase().replace(" ","-");
+                    }
                     var epGuide = `https://www.fernsehserien.de/${fsid}/episodenguide`;
                     //console.clear();
                     var result = await GM.xmlHttpRequest({
@@ -139,7 +145,7 @@
                             return response;
                         }
                     });
-                    var html=document.createElement("div");
+                    var html = document.createElement("div");
                     html.innerHTML = result.responseText;
                     fsid = html.querySelector('meta[property="og:url"]').content.split("/")[3];
                     var ep = null;
@@ -194,12 +200,16 @@
             "language": "de",
             "value": selectedLabel
         };
-        setItem(JSON.stringify({
+        setItem(itemId, JSON.stringify({
             "labels": labels,
-        }), selectedLabel);
+        }), "set de label from Fernsehserien.de: " + selectedLabel );
+
+        if (fsidNotSet){
+            setItem(seriesId, JSON.stringify({"claims":[{"mainsnak":{"snaktype":"value","property":"P5327","datavalue":{"value":fsid,"type":"string"}},"type":"statement","rank":"normal"}]}), "set ID from Fernsehserien.de: " + seriesId);
+        }
     }
 
-    function setItem(item, summary){
+    function setItem(itemId, data, summary){
         $.ajax({
             type: "POST",
             url: mw.util.wikiScript("api"),
@@ -209,8 +219,8 @@
                 id: itemId,
                 type: "item",
                 token: mw.user.tokens.get("csrfToken"),
-                data: item,
-                summary: "set de label from Fernsehserien.de: " + summary,
+                data: data,
+                summary: summary,
                 exclude: "pageid|ns|title|lastrevid|touched|sitelinks"
             }
         })
