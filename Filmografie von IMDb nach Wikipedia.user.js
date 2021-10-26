@@ -4,10 +4,14 @@
 // @description  Wandle die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um.
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
-// @version      2.2.3
+// @version      2.2.4
+// @homepage     https://github.com/CennoxX/userscripts
+// @downloadURL  https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/code/Filmografie%20von%20IMDb%20nach%20Wikipedia.user.js
+// @updateURL    https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/code/Filmografie%20von%20IMDb%20nach%20Wikipedia.meta.js
+// @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Filmografie%20von%20IMDb%20nach%20Wikipedia]%20
 // @connect      www.wikidata.org
 // @connect      www.imdb.com
-// @connect      https://resolve.eidr.org
+// @connect      resolve.eidr.org
 // @match        https://www.imdb.com/name/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=wikipedia.org
 // @grant        GM.xmlHttpRequest
@@ -15,9 +19,10 @@
 // @grant        GM.registerMenuCommand
 // @grant        unsafeWindow
 // @license      MIT
+// @noframes
 // ==/UserScript==
 /* jshint esversion: 8 */
-/* eslint quotes: ['warn', 'single', 'avoid-escape']*/
+/* eslint quotes: ['warn', 'single', {'avoidEscape': true}]*/
 (function(){
     'use strict';
     unsafeWindow.ladeFilmografie = function(occupation='actor,#filmo-head-actress', showShort=true, episodeLabel='Folge', showAlert=false){
