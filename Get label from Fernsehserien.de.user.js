@@ -6,6 +6,9 @@
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @homepage     https://github.com/CennoxX/userscripts/
+// @downloadURL  https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/code/Get%20label%20from%20Fernsehseriende.user.js
+// @updateURL    https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/code/Get%20label%20from%20Fernsehseriende.meta.js
+// @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Get%20label%20from%20Fernsehserien.de.user.js]%20
 // @match        https://www.wikidata.org/wiki/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=wikidata.org
 // @grant        GM.xmlHttpRequest
@@ -134,7 +137,7 @@
                     fsid = data.entities[seriesId].claims.P5327?.[0].mainsnak.datavalue.value;
 					fsidNotSet = fsid == null;
                     if (fsidNotSet){
-                        fsid = series.innerText.toLowerCase().replace(" ","-");
+                        fsid = series.innerText.toLowerCase().replace(/ /g,"-");
                     }
                     var epGuide = `https://www.fernsehserien.de/${fsid}/episodenguide`;
                     //console.clear();
