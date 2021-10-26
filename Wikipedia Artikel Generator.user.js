@@ -1,14 +1,19 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
 // @namespace    https://greasyfork.org/users/21515
-// @version      0.6.0
+// @version      0.6.1
 // @description  Erstelle Wikipedia-Artikel aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
-// @homepage     https://twitter.com/CennoxX
+// @homepage     https://github.com/CennoxX/userscripts
+// @downloadURL  https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/code/Wikipedia%20Artikel%20Generator.user.js
+// @updateURL    https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/code/Wikipedia%20Artikel%20Generator.meta.js
+// @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Wikipedia%20Artikel%20Generator]%20
 // @match        https://de.wikipedia.org/w/index.php?title=*&action=edit*
+// @match        https://de.wikipedia.org/wiki/*?action=edit*
 // @connect      www.wikidata.org
 // @connect      www.imdb.com
+// @connect      resolve.eidr.org
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=de.wikipedia.org
 // @grant        GM.xmlHttpRequest
 // @grant        GM.setClipboard
