@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Spotify hotkeys
-// @version     1.7
+// @version     1.8
 // @description Allows hotkeys and media keys to control the Spotify web player from any tab
 // @author      CennoxX
 // @contact     cesar.bernard@gmx.de
@@ -12,16 +12,15 @@
 // @grant       GM_setValue
 // ==/UserScript==
 /* jshint esversion: 6 */
-const pauseButton = "[data-testid='control-button-pause']";
-const playButton = "[data-testid='control-button-play']";
+/* eslint curly: "off"*/
+const playpauseButton = "[data-testid=control-button-playpause]";
 const previousButton = ".player-controls__buttons button:last-child";
-const skipButton = "[data-testid='control-button-skip-forward']";
-
+const skipButton = "[data-testid=control-button-skip-forward]";
 document.addEventListener("keydown", function (e) {
     if (e.ctrlKey && e.altKey && e.key == "p" || e.key == "MediaPlayPause")
-        GM_setValue("ctrl", pauseButton + "," + playButton);
+        GM_setValue("ctrl", playpauseButton);
     if (e.ctrlKey && e.altKey && e.key == "s" || e.key == "MediaStop")
-        GM_setValue("ctrl", pauseButton);
+        GM_setValue("ctrl", "stop");
     if (e.ctrlKey && e.altKey && e.key == "," || e.key == "MediaTrackPrevious")
         GM_setValue("ctrl", previousButton);
     if (e.ctrlKey && e.altKey && e.key == "." || e.key == "MediaTrackNext")
@@ -30,9 +29,15 @@ document.addEventListener("keydown", function (e) {
 if (document.domain == "open.spotify.com") {
     setInterval(function () {
         let ctrl = GM_getValue("ctrl");
-        if (ctrl && (ctrl != pauseButton || document.title.includes(" · "))){
+        if (!ctrl)
+            return;
+        if (ctrl == "stop"){
+            if (document.title.includes(" · ")){
+                document.querySelector(playpauseButton).click();
+            }
+        } else {
             document.querySelector(ctrl).click();
-            GM_setValue("ctrl", "");
         }
+        GM_setValue("ctrl", "");
     }, 100);
 }
