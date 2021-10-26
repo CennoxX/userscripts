@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
 // @namespace    https://greasyfork.org/users/21515
-// @version      0.4.0
+// @version      0.4.1
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
