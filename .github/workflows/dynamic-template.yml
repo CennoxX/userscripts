@@ -35,7 +35,6 @@ jobs:
         run: |
           git config --global user.email "githubactionbot@gmail.com"
           git config --global user.name "Github Action Bot"
-          git add -f ./templates/**
           if [ "$(git status --porcelain)" != "" ]; then
             git commit -m "Template Files Regenerated"
             git push "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY"
