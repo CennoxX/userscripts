@@ -8,7 +8,12 @@ Allow hotkeys and media keys to control the Spotify web player from any tab
 <summary>details</summary>
 
 <!-- START ./docs/Spotify hotkeys.md -->
-<!-- END ./docs/Spotify hotkeys.md -->
+This script adds hotkeys to control the Spotify webplayer from any tab. Note that you have to reload all tabs after installation. It can be used with keyboard hotkeys or with <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaKeys">MediaKeys</a>.
+
+    [ctrl] + [alt] + [p] – play/pause
+    [ctrl] + [alt] + [s] – stop
+    [ctrl] + [alt] + [,] – previous title
+    [ctrl] + [alt] + [.] – next title<!-- END ./docs/Spotify hotkeys.md -->
 
 </details>
 
@@ -19,7 +24,7 @@ Use tabs to choose the Google search results
 <summary>details</summary>
 
 <!-- START ./docs/Google tab paths.md -->
-<!-- END ./docs/Google tab paths.md -->
+This script allows to use the tab key to switch between the Google results.<!-- END ./docs/Google tab paths.md -->
 
 </details>
 
@@ -30,7 +35,8 @@ Closes the old tab, if a new one with the same URL emerges
 <summary>details</summary>
 
 <!-- START ./docs/closeDoublePage.md -->
-<!-- END ./docs/closeDoublePage.md -->
+This script closes the old tab, if a new one with the same URL emerges.
+On Firefox you might need to open about:config and set allow_scripts_to_close_windows to true.<!-- END ./docs/closeDoublePage.md -->
 
 </details>
 
@@ -41,7 +47,7 @@ Redirects to the last.fm page in the own language
 <summary>details</summary>
 
 <!-- START ./docs/last.fm language redirect.md -->
-<!-- END ./docs/last.fm language redirect.md -->
+This script redirects to the last.fm-page of the own language, if it is available.<!-- END ./docs/last.fm language redirect.md -->
 
 </details>
 
@@ -52,7 +58,7 @@ Change the appearance of fullscreen-for-googletasks.com to resemble tasks.google
 <summary>details</summary>
 
 <!-- START ./docs/Google Tasks Desktop.md -->
-<!-- END ./docs/Google Tasks Desktop.md -->
+Remove the yellowish theme of fullscreen-for-googletasks.com to the one at tasks.google.com.<!-- END ./docs/Google Tasks Desktop.md -->
 
 </details>
 
@@ -63,7 +69,9 @@ Get data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
 <summary>details</summary>
 
 <!-- START ./docs/JSON-LD from IMDb to QuickStatements.md -->
-<!-- END ./docs/JSON-LD from IMDb to QuickStatements.md -->
+This script loads data from <a href="http://www.imdb.com/">IMDb</a> for using it in <a href="http://www.wikidata.org/">Wikidata</a>.
+
+To do so, it loads the <a href="http://json-ld.org/">JSON-LD</a> of currently opened IMDb-sites, where some simple statements like actor, writer, date published, etc. (and their IMDb-IDs) are stored. From Wikidata the script loads the according Wikidata items with the help of the IMDb-IDs. The statements then are inserted to the form of <a href="https://tools.wmflabs.org/quickstatements/#/batch">QuickStatements</a> for an import to Wikidata. Source statements are also made. To work, you need to be logged in to QuickStatements and have the tab opened. Before importing the data with the button <i>Import V1 commands</i> you have to change something in the textarea (like deleting the last new line) to validate the input.<!-- END ./docs/JSON-LD from IMDb to QuickStatements.md -->
 
 </details>
 
@@ -74,7 +82,7 @@ Offer Fernsehserien.de label based on episode number or title as Wikidata label
 <summary>details</summary>
 
 <!-- START ./docs/Get label from Fernsehserien.de.md -->
-<!-- END ./docs/Get label from Fernsehserien.de.md -->
+This script shows possible labels for Wikidata items of TV episodes, which can be added with one click after verifying them. The titles come from Fernsehserien.de and are determined by the original title of the episode and the episode number. The Fernsehserien.de ID of the series is determined from the corresponding TV series wikidata item. If there is no ID, the script tries to guess one. The reliability of the label is expressed in colors (red, yellow, green). The link to the Fernsehserien.de episode guide is also added.<!-- END ./docs/Get label from Fernsehserien.de.md -->
 
 </details>
 
@@ -86,7 +94,7 @@ Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Da
 <summary>details</summary>
 
 <!-- START ./docs/Gmail Calender Connector.md -->
-<!-- END ./docs/Gmail Calender Connector.md -->
+Dieses Script ermittelt bei Anlage eines Kalendereintrages aus Googlemail über "Mehr" > "Termin erstellen" den Zeitpunkt entsprechend des Inhaltes der E-Mail. Dazu sucht es nach bekannten Datums- und Uhrzeitformaten und Wochentagen, füllt den Zeitpunkt, setzt die Dauer auf zwei Stunden und löscht alle Kalendertermin-Teilnehmer.<!-- END ./docs/Gmail Calender Connector.md -->
 
 </details>
 
@@ -97,7 +105,11 @@ Wandle die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um.
 <summary>details</summary>
 
 <!-- START ./docs/Filmografie von IMDb nach Wikipedia.md -->
-<!-- END ./docs/Filmografie von IMDb nach Wikipedia.md -->
+Dieses Skript wandelt die Filmografie der IMDb in Wiki-Quelltext einschließlich Wiki-Links um.
+
+Dazu lädt es die Filmografie einer geöffneten IMDb-Seite und vergleicht die IMDb-IDs mit bestehenden Einträgen auf Wikidata. Falls vorhanden, werden die deutschen Titel der Einträge aus dem entsprechenden deutschen Wikipedia-Artikel, der zugehörigen Wikidata-Bezeichnung oder aus der IMDb übernommen. Für den Originaltitel wird zunächst Wikidata konsultiert, falls dort keine Informationen gespeichert sind, wird der Titel aus dem Entertainment Identifier Registry oder der IMDb verwendet. Wiki-Links für bestehende Artikel werden automatisch entsprechend den Angaben auf Wikidata gesetzt.
+
+Um die Filmografie zu generieren, kann im Menü des Benutzerskripts auf "Filmografie laden" geklickt werden. Nach ein paar Sekunden erscheint eine Meldung, dass die Filmografie kopiert wurde. Die Filmografie kann mit erweiterten Einstellungen in der Browserkonsole geladen werden. Durch die Angabe der Parameter in ```ladeFilmografie(occupation,showShort,episodeLabel);``` kann die Episodenbezeichnung (```"Folge"``` oder ```"Episode"```) gewählt werden sowie entschieden werden, ob Kurzfilme angezeigt werden sollen oder nicht (```true``` oder ```false```). Durch die Angabe des Berufes können Filmografien von Drehbuchautoren (```"writer"```), Regisseuren (```"director"```) und weiteren Berufen statt Filmographien von Schauspielern erstellt werden. Die Angabe des Parameters entspricht dem name-Attribut des jeweiligen Abschnitt-Links der Filmografie auf IMDb.<!-- END ./docs/Filmografie von IMDb nach Wikipedia.md -->
 
 </details>
 
@@ -108,7 +120,8 @@ Erstelle Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 <summary>details</summary>
 
 <!-- START ./docs/Wikipedia Artikel Generator.md -->
-<!-- END ./docs/Wikipedia Artikel Generator.md -->
+Dieses Script erstellt auf Basis von Wikidata ein Grundgerüst für Wikipedia-Artikel und vereinfacht so die Anlage von Artikeln. Das Script ist dabei vor allem für Schauspieler-Artikel angepasst, bei anderen Personen-Artikeln werden noch einzelne Teile des Artikels unterstützt, andere Arten von Artikel führen zurzeit noch zu einem permanenten Ladezustand. Abhängig ist das Script dabei immer von der Datengrundlage auf Wikidata. Angelegt werden eine kurze Einleitung mit Bild, Geburtsdaten, Nationalität, Berufen, einige Sätze zum Bildungsweg und Partnern, Filmografie (unter einbeziehen von Daten der IMDb), Kategorien und Personendaten.
+Das Script befindet sich derzeit noch im Entwicklungszustand.<!-- END ./docs/Wikipedia Artikel Generator.md -->
 
 </details>
 
