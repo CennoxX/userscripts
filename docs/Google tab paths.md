@@ -1,0 +1,1 @@
+This script allows to use the tab key to switch between the Google results.

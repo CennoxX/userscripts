@@ -1,0 +1,1 @@
+This script redirects to the last.fm-page of the own language, if it is available.

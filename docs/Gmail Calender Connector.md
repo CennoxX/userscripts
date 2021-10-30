@@ -1,0 +1,1 @@
+Dieses Script ermittelt bei Anlage eines Kalendereintrages aus Googlemail über "Mehr" > "Termin erstellen" den Zeitpunkt entsprechend des Inhaltes der E-Mail. Dazu sucht es nach bekannten Datums- und Uhrzeitformaten und Wochentagen, füllt den Zeitpunkt, setzt die Dauer auf zwei Stunden und löscht alle Kalendertermin-Teilnehmer.
