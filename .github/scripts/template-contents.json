@@ -1,0 +1,160 @@
+[
+  {
+	"output"   : "../../templates/variables/defaults.md",
+	"template" : "../markdown-templates/default-variables.md",
+	"contents" : {
+	  "CI"                 : {
+		"description" : "Always set to **true**.",
+		"usage"       : "${{\\# GITHUB_ACTIONS }}\n  Github Actions Is Enabled\n${{\\/ GITHUB_ACTIONS }}",
+		"output"      : "${{# GITHUB_ACTIONS }}\n  Github Actions Is Enabled\n${{/ GITHUB_ACTIONS }}"
+	  },
+	  "GITHUB_WORKFLOW"    : {
+		"description" : "The name of the workflow.",
+		"usage"       : "Workflow Name Is : ${{\\ GITHUB_WORKFLOW }}",
+		"output"      : "Workflow Name Is : ${{ GITHUB_WORKFLOW }}"
+	  },
+	  "GITHUB_RUN_ID"      : {
+		"description" : "A unique number for each run within a repository. This number does not change if you re-run the workflow run",
+		"usage"       : "ID : ${{\\ GITHUB_RUN_ID }}",
+		"output"      : "ID : ${{ GITHUB_RUN_ID }}"
+	  },
+	  "GITHUB_RUN_NUMBER"  : {
+		"description" : "A unique number for each run of a particular workflow in a repository. This number begins at 1 for the workflow's first run, and increments with each new run. This number does not change if you re-run the workflow run.",
+		"usage"       : "Run Number : ${{\\ GITHUB_RUN_NUMBER }}",
+		"output"      : "Run Number : ${{ GITHUB_RUN_NUMBER }}"
+	  },
+	  "GITHUB_ACTION"      : {
+		"description" : "The unique identifier (**id**) of the action.",
+		"usage"       : "Run Number : ${{\\ GITHUB_ACTION }}",
+		"output"      : "Run Number : ${{ GITHUB_ACTION }}"
+	  },
+	  "GITHUB_ACTIONS"     : {
+		"description" : "Always set to **true** when GitHub Actions is running the workflow. You can use this variable to differentiate when tests are being run locally or by GitHub Actions.",
+		"usage"       : "Run Number : ${{\\ GITHUB_ACTIONS }}",
+		"output"      : "Run Number : ${{ GITHUB_ACTIONS }}"
+	  },
+	  "GITHUB_REPOSITORY"  : {
+		"description" : "The owner and repository name. For example, **octocat/Hello-World**.",
+		"usage"       : "Repository Owner Is : ${{\\ GITHUB_REPOSITORY }}",
+		"output"      : "Repository Owner Is : ${{ GITHUB_REPOSITORY }}"
+	  },
+	  "GITHUB_EVENT_NAME"  : {
+		"description" : "The name of the webhook event that triggered the workflow.",
+		"usage"       : "Triggered Event Name : ${{\\ GITHUB_EVENT_NAME }}",
+		"output"      : "Triggered Event Name : ${{ GITHUB_EVENT_NAME }}"
+	  },
+	  "GITHUB_EVENT_PATH"  : {
+		"description" : "The path of the file with the complete webhook event payload. For example, **/github/workflow/event.json**.",
+		"usage"       : "Event File : ${{\\ GITHUB_EVENT_PATH }}",
+		"output"      : "Event File : ${{ GITHUB_EVENT_PATH }}"
+	  },
+	  "GITHUB_WORKSPACE"   : {
+		"description" : "The GitHub workspace directory path. The workspace directory is a copy of your repository if your workflow uses the [**actions/checkout**](https://github.com/actions/checkout) action. If you don't use the **actions/checkout** action, the directory will be empty. For example, **/home/runner/work/my-repo-name/my-repo-name**.",
+		"usage"       : "Event File : ${{\\ GITHUB_EVENT_PATH }}",
+		"output"      : "Event File : ${{ GITHUB_EVENT_PATH }}"
+	  },
+	  "GITHUB_SHA"         : {
+		"description" : "The commit SHA that triggered the workflow. For example, **ffac537e6cbbf934b08745a378932722df287a53**.",
+		"usage"       : "Event File : ${{\\ GITHUB_SHA }}",
+		"output"      : "Event File : ${{ GITHUB_SHA }}"
+	  },
+	  "GITHUB_REF"         : {
+		"description" : "The branch or tag ref that triggered the workflow. For example, **refs/heads/feature-branch-1**. If neither a branch or tag is available for the event type, the variable will not exist.",
+		"usage"       : "Event File : ${{\\ GITHUB_REF }}",
+		"output"      : "Event File : ${{ GITHUB_REF }}"
+	  },
+	  "GITHUB_HEAD_REF"    : {
+		"description" : "Only set for forked repositories. The branch of the head repository.",
+		"usage"       : "Event File : ${{\\ GITHUB_HEAD_REF }}",
+		"output"      : "Event File : ${{ GITHUB_HEAD_REF }}"
+	  },
+	  "GITHUB_BASE_REF"    : {
+		"description" : "Only set for forked repositories. The branch of the base repository.",
+		"usage"       : "Event File : ${{\\ GITHUB_BASE_REF }}",
+		"output"      : "Event File : ${{ GITHUB_BASE_REF }}"
+	  },
+	  "GITHUB_SERVER_URL"  : {
+		"description" : "Returns the URL of the GitHub server. For example: **https://github.com**.",
+		"usage"       : "Event File : ${{\\ GITHUB_SERVER_URL }}",
+		"output"      : "Event File : ${{ GITHUB_SERVER_URL }}"
+	  },
+	  "GITHUB_API_URL"     : {
+		"description" : "Returns the API URL.  For example: **https://api.github.com**.",
+		"usage"       : "Event File : ${{\\ GITHUB_API_URL }}",
+		"output"      : "Event File : ${{ GITHUB_API_URL }}"
+	  },
+	  "GITHUB_GRAPHQL_URL" : {
+		"description" : "Returns the GraphQL API URL. For example: **https://api.github.com/graphql**.",
+		"usage"       : "Event File : ${{\\ GITHUB_GRAPHQL_URL }}",
+		"output"      : "Event File : ${{ GITHUB_GRAPHQL_URL }}"
+	  }
+	}
+  },
+  {
+	"output"   : "../../templates/file-includes/inline.md",
+	"template" : "../markdown-templates/inline-include.md",
+	"contents" : {
+	  "Local File With Relative Path"                  : {
+		"description" : "Include a file from the current file's location ",
+		"usage"       : "<\\!-- include ./parts/license.md -->",
+		"output"      : "<!-- include ./parts/license.md -->"
+	  },
+	  "Local File With Absolute Path"                  : {
+		"description" : "Include a file located inside this repository",
+		"usage"       : "<\\!-- include templates/file-includes/parts/feedback.md -->",
+		"output"      : "<!-- include templates/file-includes/parts/feedback.md -->"
+	  },
+	  "Include File Inside Codeblock"                  : {
+		"description" : "dynamic-template.yml github action yaml file which in in this repository will be included below",
+		"usage"       : "<\\!-- include [code:yml] .github/workflows/dynamic-template.yml -->",
+		"output"      : "<!-- include [code:yml] .github/workflows/dynamic-template.yml -->"
+	  },
+	  "Including File From A Remote Repository"        : {
+		"description" : "You can include any type of file from any repository. if you want to include from a **Private** Repository then you have to provide **Github Personal Access Token** Instead **Github Token** in action's workflow file",
+		"usage"       : "```\nInclude from remote repository\n<\\!-- include {owner}/{repo}/{filepath}/{file} -->\n\n\nInclude from remote repository with specific branch\n<\\!-- include {owner}/{name}@{branch}/{filepath}/{file} -->\n```\n> **Note** : use `@` when loading files from specific branch\n>\n> Example : [`octocat/Spoon-Knife@master/README.md`](https://github.com/octocat/Spoon-Knife) file will be loaded below.\n>\n> Using : `<\\!-- include octocat/Spoon-Knife@master/README.md -->`",
+		"output"      : "<!-- include octocat/Spoon-Knife@master/README.md -->",
+		"output_raw"  : false,
+		"usage_raw"   : true
+	  },
+	  "Including File From Global Repository Template" : {
+		"description" : "You can also configure a global template repository in action's workflow like `GLOBAL_TEMPLATE_REPOSITORY` and actions takes care of loading files from it. when using global template option you dont need to provide configure repository details in the include comment instead just load file like `<\\!-- include file.md -->`",
+		"usage"       : "```<\\!-- include sponsor.md -->```\n\n> If `sponsor.md` not found it current repository then it will check for the same in Global Template Repository & if found it will be loaded.",
+		"output"      : "<!-- include sponsor.md -->"
+	  }
+	}
+  },
+  {
+	"output"   : "../../templates/file-includes/reusable-includes.md",
+	"template" : "../markdown-templates/reusable-includes.md",
+	"contents" : {
+	  "Local File With Relative Path"                  : {
+		"description" : "Include a file from the current file's location ",
+		"usage"       : "<\\!-- START ./parts/license.md -->\n\n<\\!-- END ./parts/license.md -->",
+		"output"      : "<!-- START ./parts/license.md -->\n\n<!-- END ./parts/license.md -->"
+	  },
+	  "Local File With Absolute Path"                  : {
+		"description" : "Include a file located inside this repository",
+		"usage"       : "<\\!-- START templates/file-includes/parts/feedback.md -->\n\n<\\!-- END templates/file-includes/parts/feedback.md -->",
+		"output"      : "<!-- START templates/file-includes/parts/feedback.md -->\n\n<!-- END templates/file-includes/parts/feedback.md -->"
+	  },
+	  "Include File Inside Codeblock"                  : {
+		"description" : "dynamic-template.yml github action yaml file which in in this repository will be included below. its not recomended to use reusable include inside codeblock. but if you do want to have it. then use the `[code:yml]` to avoid showing include comment inside codeblock",
+		"usage"       : "<\\!-- START [code:yml] .github/workflows/dynamic-template.yml -->\n<\\!-- END [code:yml] .github/workflows/dynamic-template.yml -->",
+		"output"      : "<!-- START [code:yml] .github/workflows/dynamic-template.yml -->\n<!-- END [code:yml] .github/workflows/dynamic-template.yml -->",
+		"output_raw"  : true
+	  },
+	  "Including File From A Remote Repository"        : {
+		"description" : "You can include any type of file from any repository. if you want to include from a **Private** Repository then you have to provide **Github Personal Access Token** Instead **Github Token** in action's workflow file",
+		"usage"       : "```\nInclude from remote repository\n<\\!-- START {owner}/{repo}/{filepath}/{file} -->\n<\\!-- END {owner}/{repo}/{filepath}/{file} -->\n\n\nInclude from remote repository with specific branch\n<\\!-- START {owner}/{name}@{branch}/{filepath}/{file} -->\n<\\!-- END {owner}/{name}@{branch}/{filepath}/{file} -->\n```\n> **Note** : use `@` when loading files from specific branch\n>\n> Example : [`octocat/Spoon-Knife@master/README.md`](https://github.com/octocat/Spoon-Knife) file will be loaded below.\n>\n> Using : \n\n```\n<\\!-- START octocat/Spoon-Knife@master/README.md -->\n<\\!-- END octocat/Spoon-Knife@master/README.md -->\n```",
+		"output"      : "<!-- START octocat/Spoon-Knife@master/README.md -->\n<!-- END octocat/Spoon-Knife@master/README.md -->",
+		"output_raw"  : false,
+		"usage_raw"   : true
+	  },
+	  "Including File From Global Repository Template" : {
+		"description" : "You can also configure a global template repository in action's workflow like `GLOBAL_TEMPLATE_REPOSITORY` and actions takes care of loading files from it. when using global template option you dont need to provide configure repository details in the include comment instead just load file like `<\\!-- include file.md -->`",
+		"usage"       : "```\n<\\!-- START sponsor.md -->\n<\\!-- END sponsor.md -->\n```\n\n> If `sponsor.md` not found it current repository then it will check for the same in Global Template Repository & if found it will be loaded.",
+		"output"      : "<!-- START sponsor.md -->\n<!-- END sponsor.md -->"
+	  }
+	}
+  }
+]
