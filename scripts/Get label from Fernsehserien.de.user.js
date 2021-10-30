@@ -1,21 +1,22 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @namespace    https://greasyfork.org/users/21515
-// @version      0.4.1
+// @version      0.4.2
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
-// @homepage     https://github.com/CennoxX/userscripts/
+// @namespace    https://greasyfork.org/users/21515
+// @homepage     https://github.com/CennoxX/userscripts
 // @downloadURL  https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/code/Get%20label%20from%20Fernsehseriende.user.js
 // @updateURL    https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/code/Get%20label%20from%20Fernsehseriende.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Get%20label%20from%20Fernsehserien.de]%20
 // @match        https://www.wikidata.org/wiki/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=wikidata.org
 // @grant        GM.xmlHttpRequest
+// @license      MIT
 // ==/UserScript==
 /* jshint esversion: 8 */
-/* eslint quotes: ["warn", "double", "avoid-escape"]*/
-/* eslint curly: "off"*/
+/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
+/* eslint curly: "off" */
 /* globals jQuery, $, mw */
 
 (function(){

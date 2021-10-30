@@ -1,13 +1,19 @@
 // ==UserScript==
-// @name    Gmail Calender Connector
-// @version 1.0.1
-// @description Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus das Datum aus.
-// @author  CennoxX
-// @contact cesar.bernard@gmx.de
-// @homepage    https://twitter.com/CennoxX
-// @namespace   https://greasyfork.org/users/21515
+// @name         Gmail Calender Connector
+// @version      1.0.2
+// @description  Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus das Datum aus.
+// @author       CennoxX
+// @contact      cesar.bernard@gmx.de
+// @namespace    https://greasyfork.org/users/21515
+// @homepage     https://github.com/CennoxX/userscripts
+// @downloadURL  https://greasyfork.org/scripts/33508-gmail-calender-connector/code/Gmail%20Calender%20Connector.user.js
+// @updateURL    https://greasyfork.org/scripts/33508-gmail-calender-connector/code/Gmail%20Calender%20Connector.meta.js
+// @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Gmail%20Calender%20Connector]%20
 // @include      https://calendar.google.com/calendar/*/eventedit?dates*
+// @grant        none
+// @license      MIT
 // ==/UserScript==
+
 var now = new Date();
 var link = location.search;
 link = link.replace('Januar', '01.').replace('Februar', '02.').replace('März', '03.').replace('April', '04.').replace('Mai', '05.').replace('Juni', '06.');

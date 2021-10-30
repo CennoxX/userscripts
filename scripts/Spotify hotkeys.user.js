@@ -1,18 +1,23 @@
 // ==UserScript==
-// @name        Spotify hotkeys
-// @version     1.8
-// @description Allows hotkeys and media keys to control the Spotify web player from any tab
-// @author      CennoxX
-// @contact     cesar.bernard@gmx.de
-// @homepage    https://twitter.com/CennoxX
-// @namespace   https://greasyfork.org/users/21515
-// @include     *
-// @icon        https://www.google.com/s2/favicons?sz=64&domain=spotify.com
-// @grant       GM_getValue
-// @grant       GM_setValue
+// @name         Spotify hotkeys
+// @version      1.8.1
+// @description  Allows hotkeys and media keys to control the Spotify web player from any tab
+// @author       CennoxX
+// @contact      cesar.bernard@gmx.
+// @namespace    https://greasyfork.org/users/21515
+// @homepage     https://github.com/CennoxX/userscripts
+// @downloadURL  https://greasyfork.org/scripts/31978-spotify-hotkeys/code/Spotify%20hotkeys.user.js
+// @updateURL    https://greasyfork.org/scripts/31978-spotify-hotkeys/code/Spotify%20hotkeys.meta.js
+// @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Spotify%20hotkeys]%20
+// @include      *
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=spotify.com
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @license      MIT
 // ==/UserScript==
-/* jshint esversion: 6 */
-/* eslint curly: "off"*/
+/* jshint esversion: 8 */
+/* eslint curly: "off" */
+
 const playpauseButton = "[data-testid=control-button-playpause]";
 const previousButton = ".player-controls__buttons button:last-child";
 const skipButton = "[data-testid=control-button-skip-forward]";

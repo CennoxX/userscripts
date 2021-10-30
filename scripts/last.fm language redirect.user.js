@@ -1,14 +1,19 @@
 // ==UserScript==
 // @name         last.fm language redirect
+// @version      0.1.1
+// @description  Redirects to the page of the own language
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
-// @description  Redirects to the page of the own language
-// @license      MIT
-// @version      0.1
+// @homepage     https://github.com/CennoxX/userscripts
+// @downloadURL  https://greasyfork.org/scripts/385900-last-fm-language-redirect/code/lastfm%20language%20redirect.user.js
+// @updateURL    https://greasyfork.org/scripts/385900-last-fm-language-redirect/code/lastfm%20language%20redirect.meta.js
+// @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Last.fm%20language%20redirect]%20
 // @match        https://www.last.fm/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=last.fm
 // @run-at       document-start
 // @grant        none
+// @license      MIT
 // ==/UserScript==
 
 (function() {
