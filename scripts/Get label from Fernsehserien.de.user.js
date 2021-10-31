@@ -15,7 +15,7 @@
 // @license      MIT
 // ==/UserScript==
 /* jshint esversion: 8 */
-/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
+/* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
 /* eslint curly: "off" */
 /* globals jQuery, $, mw */
 
