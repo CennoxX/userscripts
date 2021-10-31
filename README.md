@@ -24,7 +24,8 @@ Use tabs to choose the Google search results
 <summary>details</summary>
 
 <!-- START ./docs/Google tab paths.md -->
-This script allows to use the tab key to switch between the Google results.<!-- END ./docs/Google tab paths.md -->
+
+<!-- END ./docs/Google tab paths.md -->
 
 </details>
 
