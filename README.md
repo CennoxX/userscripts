@@ -24,7 +24,7 @@ Use tabs to choose the Google search results
 <summary>details</summary>
 
 <!-- START ./docs/Google tab paths.md -->
-
+This script allows to use the tab key to switch between the Google results.
 <!-- END ./docs/Google tab paths.md -->
 
 </details>
@@ -60,6 +60,7 @@ Change the appearance of fullscreen-for-googletasks.com to resemble tasks.google
 
 <!-- START ./docs/Google Tasks Desktop.md -->
 Remove the yellowish theme of fullscreen-for-googletasks.com and change the colors to the ones at tasks.google.com.
+
 <!-- END ./docs/Google Tasks Desktop.md -->
 
 </details>
@@ -127,6 +128,7 @@ Dieses Script erstellt auf Basis von Wikidata ein Grundgerüst für Wikipedia-Ar
 Das Script ist zurzeit vor allem für Schauspieler-Artikel angepasst, bei anderen Personen-Artikeln werden noch einzelne Teile des Artikels geladen, andere Arten von Artikel führen zurzeit noch zu einem permanenten Ladezustand. Abhängig ist das Script dabei immer von der Datengrundlage auf Wikidata. Angelegt werden eine kurze Einleitung mit Bild, Geburtsdaten, Nationalität, Berufen, einige Sätze zum Bildungsweg und Partnern, Filmografie (unter Einbeziehen von Daten der IMDb), Kategorien und Personendaten.
 
 Das Script befindet sich derzeit noch im Entwicklungszustand.
+
 <!-- END ./docs/Wikipedia Artikel Generator.md -->
 
 </details>
