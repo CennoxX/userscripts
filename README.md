@@ -58,7 +58,8 @@ Change the appearance of fullscreen-for-googletasks.com to resemble tasks.google
 <summary>details</summary>
 
 <!-- START ./docs/Google Tasks Desktop.md -->
-Remove the yellowish theme of fullscreen-for-googletasks.com to the one at tasks.google.com.<!-- END ./docs/Google Tasks Desktop.md -->
+Remove the yellowish theme of fullscreen-for-googletasks.com and change the colors to the ones at tasks.google.com.
+<!-- END ./docs/Google Tasks Desktop.md -->
 
 </details>
 
@@ -120,8 +121,12 @@ Erstelle Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 <summary>details</summary>
 
 <!-- START ./docs/Wikipedia Artikel Generator.md -->
-Dieses Script erstellt auf Basis von Wikidata ein Grundgerüst für Wikipedia-Artikel und vereinfacht so die Anlage von Artikeln. Das Script ist dabei vor allem für Schauspieler-Artikel angepasst, bei anderen Personen-Artikeln werden noch einzelne Teile des Artikels unterstützt, andere Arten von Artikel führen zurzeit noch zu einem permanenten Ladezustand. Abhängig ist das Script dabei immer von der Datengrundlage auf Wikidata. Angelegt werden eine kurze Einleitung mit Bild, Geburtsdaten, Nationalität, Berufen, einige Sätze zum Bildungsweg und Partnern, Filmografie (unter einbeziehen von Daten der IMDb), Kategorien und Personendaten.
-Das Script befindet sich derzeit noch im Entwicklungszustand.<!-- END ./docs/Wikipedia Artikel Generator.md -->
+Dieses Script erstellt auf Basis von Wikidata ein Grundgerüst für Wikipedia-Artikel und vereinfacht so die Anlage von Artikeln. Um ein Artikel-Grundgerüst zu generieren, muss ein Artikel mit dem Quelltext-Editor auf Wikipedia im Artikel-Namensraum erstellt werden (etwa durch Anklicken eines Rotlinks, zB [Keith Nobbs (Schauspieler)](https://de.wikipedia.org/wiki/Keith_Nobbs%20(Schauspieler)?action=edit)). Es erscheint eine Eingabeaufforderung mit möglichen auf Wikidata vorhandenen Einträgen. Nach Angabe einer der möglichen Nummern, wird das Grundgerüst geladen. Dies kann einige Zeit dauern. Alternativ kann in der Eingabeaufforderung auch der Bezeichner von Wikidata (Q…) angegeben werden. Derzeit werden nur Personen-Artikel unterstützt.
+
+Das Script ist zurzeit vor allem für Schauspieler-Artikel angepasst, bei anderen Personen-Artikeln werden noch einzelne Teile des Artikels geladen, andere Arten von Artikel führen zurzeit noch zu einem permanenten Ladezustand. Abhängig ist das Script dabei immer von der Datengrundlage auf Wikidata. Angelegt werden eine kurze Einleitung mit Bild, Geburtsdaten, Nationalität, Berufen, einige Sätze zum Bildungsweg und Partnern, Filmografie (unter Einbeziehen von Daten der IMDb), Kategorien und Personendaten.
+
+Das Script befindet sich derzeit noch im Entwicklungszustand.
+<!-- END ./docs/Wikipedia Artikel Generator.md -->
 
 </details>
 
