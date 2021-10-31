@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      0.6.2
+// @version      0.6.3
 // @description  Erstelle Grundgerüste für Wikipedia-Artikel aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -104,17 +104,22 @@
         });
         let searchItem = JSON.parse(searchRequest.responseText);
         let ids = searchItem.query.search.map(i => i.title).join("|");
-        let descriptionRequest = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: 'https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=sitelinks|labels|descriptions&languages=de&sitefilter=dewiki&languagefallback=true&ids=' + ids,
-            onload: function(response) {
-                return response;
-            }
-        });
-        let descriptionItems = JSON.parse(descriptionRequest.responseText);
-        let filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length!=1);
-        let promptText = "Wähle den passenden Eintrag:\n";
-        promptText += filteredDescriptionItems.map((i,e) => (Number(e+1) + ": "+i.labels.de.value+" ("+(i.descriptions.de?.value??"")+")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
+        let promptText = "";
+        if (ids != ""){
+            let descriptionRequest = await GM.xmlHttpRequest({
+                method: 'GET',
+                url: 'https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=sitelinks|labels|descriptions&languages=de&sitefilter=dewiki&languagefallback=true&ids=' + ids,
+                onload: function(response) {
+                    return response;
+                }
+            });
+            let descriptionItems = JSON.parse(descriptionRequest.responseText);
+            let filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length!=1);
+            promptText = "Wähle den passenden Eintrag:\n";
+            promptText += filteredDescriptionItems.map((i,e) => (Number(e+1) + ": "+i.labels.de.value+" ("+(i.descriptions.de?.value??"")+")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
+        }else{
+            promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) an:";
+        }
         let id = prompt(promptText);
         if (id.startsWith("Q")){
             return id;
