@@ -3,7 +3,7 @@ name: Dynamic Template
 on:
   push:
     paths:
-      - documentation/**
+      - docs/**
       - .github/scripts/**
       - README.md
     branches:
