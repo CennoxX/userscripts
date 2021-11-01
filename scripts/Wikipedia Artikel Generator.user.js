@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      0.6.3
+// @version      0.6.4
 // @description  Erstelle Grundgerüste für Wikipedia-Artikel aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -105,6 +105,7 @@
         let searchItem = JSON.parse(searchRequest.responseText);
         let ids = searchItem.query.search.map(i => i.title).join("|");
         let promptText = "";
+        let filteredDescriptionItems = [];
         if (ids != ""){
             let descriptionRequest = await GM.xmlHttpRequest({
                 method: 'GET',
@@ -114,11 +115,11 @@
                 }
             });
             let descriptionItems = JSON.parse(descriptionRequest.responseText);
-            let filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length!=1);
+            filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length!=1);
             promptText = "Wähle den passenden Eintrag:\n";
             promptText += filteredDescriptionItems.map((i,e) => (Number(e+1) + ": "+i.labels.de.value+" ("+(i.descriptions.de?.value??"")+")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
         }else{
-            promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) an:";
+            promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) direkt an:";
         }
         let id = prompt(promptText);
         if (id.startsWith("Q")){
