@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.4.2
+// @version      0.4.3
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -209,7 +209,7 @@
         }), "set de label from Fernsehserien.de: " + selectedLabel );
 
         if (fsidNotSet){
-            setItem(seriesId, JSON.stringify({"claims":[{"mainsnak":{"snaktype":"value","property":"P5327","datavalue":{"value":fsid,"type":"string"}},"type":"statement","rank":"normal"}]}), "set ID from Fernsehserien.de: " + seriesId);
+            setItem(seriesId, JSON.stringify({"claims":[{"mainsnak":{"snaktype":"value","property":"P5327","datavalue":{"value":fsid,"type":"string"}},"type":"statement","rank":"normal"}]}), "set ID from Fernsehserien.de: " + fsid);
         }
     }
 
