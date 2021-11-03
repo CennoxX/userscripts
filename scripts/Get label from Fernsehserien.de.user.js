@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.4.3
+// @version      0.5.0
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -122,8 +122,8 @@
     }
     var mainLoop = setInterval(async()=>{
         if (typeof $ != "undefined"){
-            if (document.querySelector(".wikibase-labelview-text").innerText=="Keine Bezeichnung vorhanden"){
-                var oldTitle = document.querySelector(".wikibase-title-label span")?.innerText;
+            if (document.querySelector(".wikibase-entitytermsforlanguageview-de .wb-empty.wikibase-labelview")){
+                var oldTitle = document.querySelector(".wikibase-title-label span")?.innerText??document.querySelector(".wikibase-title-label")?.innerText;
                 if (oldTitle != null){
                     clearInterval(mainLoop);
                     var season = document.querySelector('[data-property-id="P4908"] .wikibase-snakview-value')?.innerText.split("/Staffel ").pop();
