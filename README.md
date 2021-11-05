@@ -1,7 +1,7 @@
 # userscripts
-userscripts [published at greasyfork](https://greasyfork.org/de/users/21515-cesar-bernard)
+Userscripts [published at greasyfork](https://greasyfork.org/de/users/21515-cesar-bernard). The userscripts listed here are only tested with [Firefox](https://www.mozilla.org/de/firefox/new/) and [Tampermonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/).
 
-###### [Spotify hotkeys](https://greasyfork.org/scripts/31978-spotify-hotkeys/code/Spotify%20hotkeys.user.js)
+###### [Spotify hotkeys](https://greasyfork.org/scripts/31978-spotify-hotkeys/)
 Allow hotkeys and media keys to control the Spotify web player from any tab
 
 <details>
@@ -18,7 +18,7 @@ This script adds hotkeys to control the Spotify webplayer from any tab. Note tha
 
 </details>
 
-###### [Google tab paths](https://greasyfork.org/scripts/389426-google-tab-paths/code/Google%20tab%20paths.user.js)
+###### [Google tab paths](https://greasyfork.org/scripts/389426-google-tab-paths/)
 Use tabs to choose the Google search results
 
 <details>
@@ -30,7 +30,7 @@ This script allows to use the tab key to switch between the Google results.
 
 </details>
 
-###### [closeDoublePage](https://greasyfork.org/scripts/38471-closedoublepage/code/closeDoublePage.user.js)
+###### [closeDoublePage](https://greasyfork.org/scripts/38471-closedoublepage/)
 Closes the old tab, if a new one with the same URL emerges
 
 <details>
@@ -42,7 +42,7 @@ On Firefox you might need to open about:config and set allow_scripts_to_close_wi
 
 </details>
 
-###### [last.fm language redirect](https://greasyfork.org/scripts/385900-last-fm-language-redirect/code/lastfm%20language%20redirect.user.js)
+###### [last.fm language redirect](https://greasyfork.org/scripts/385900-last-fm-language-redirect/)
 Redirects to the last.fm page in the own language
 
 <details>
@@ -53,7 +53,7 @@ This script redirects to the last.fm-page of the own language, if it is availabl
 
 </details>
 
-###### [Google Tasks Desktop](https://greasyfork.org/scripts/429123-google-tasks-desktop/code/Google%20Tasks%20Desktop.user.js)
+###### [Google Tasks Desktop](https://greasyfork.org/scripts/429123-google-tasks-desktop/)
 Change the appearance of fullscreen-for-googletasks.com to resemble tasks.google.com more
 
 <details>
@@ -66,7 +66,7 @@ Remove the yellowish theme of fullscreen-for-googletasks.com and change the colo
 
 </details>
 
-###### [JSON-LD from IMDb to QuickStatements](https://greasyfork.org/scripts/377488-json-ld-from-imdb-to-quickstatements/code/JSON-LD%20from%20IMDb%20to%20QuickStatements.user.js)
+###### [JSON-LD from IMDb to QuickStatements](https://greasyfork.org/scripts/377488-json-ld-from-imdb-to-quickstatements/)
 Get data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
 
 <details>
@@ -79,7 +79,7 @@ To do so, it loads the <a href="http://json-ld.org/">JSON-LD</a> of currently op
 
 </details>
 
-###### [Get label from Fernsehserien.de](https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/code/Get%20label%20from%20Fernsehseriende.user.js)
+###### [Get label from Fernsehserien.de](https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/)
 Offer Fernsehserien.de label based on episode number or title as Wikidata label
 
 <details>
@@ -91,7 +91,7 @@ This script shows possible labels for Wikidata items of TV episodes, which can b
 </details>
 
 ### deutsche Scripte
-##### [Gmail Calender Connector](https://greasyfork.org/scripts/33508-gmail-calender-connector/code/Gmail%20Calender%20Connector.user.js)
+##### [Gmail Calender Connector](https://greasyfork.org/scripts/33508-gmail-calender-connector/)
 Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
 
 <details>
@@ -102,7 +102,7 @@ Dieses Script ermittelt bei Anlage eines Kalendereintrages aus Googlemail über 
 
 </details>
 
-###### [Filmografie von IMDb nach Wikipedia](https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/code/Filmografie%20von%20IMDb%20nach%20Wikipedia.user.js)
+###### [Filmografie von IMDb nach Wikipedia](https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/)
 Wandle die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um.
 
 <details>
@@ -117,7 +117,7 @@ Um die Filmografie zu generieren, kann im Menü des Benutzerskripts auf "Filmogr
 
 </details>
 
-###### [Wikipedia Artikel Generator](https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/code/Wikipedia%20Artikel%20Generator.user.js)
+###### [Wikipedia Artikel Generator](https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/)
 Erstelle Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 
 <details>
@@ -133,4 +133,3 @@ Das Script befindet sich derzeit noch im Entwicklungszustand.
 <!-- END ./docs/Wikipedia Artikel Generator.md -->
 
 </details>
-
