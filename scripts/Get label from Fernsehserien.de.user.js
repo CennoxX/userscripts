@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.5.1
+// @version      0.6.0
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -123,7 +123,14 @@
     var mainLoop = setInterval(async()=>{
         if (typeof $ != "undefined"){
             if (document.querySelector(".wikibase-entitytermsforlanguageview-de .wb-empty.wikibase-labelview")){
-                var oldTitle = document.querySelector(".wikibase-title-label span")?.innerText??document.querySelector(".wikibase-title-label")?.innerText;
+                var oldTitle = document.querySelector(".wikibase-title-label span")?.innerText;
+                if (oldTitle == null){
+                    if (document.querySelector(".wb-empty .wikibase-title-label") == null){
+                        oldTitle = document.querySelector(".wikibase-title-label")?.innerText;
+                    } else {
+                        oldTitle = document.querySelector('[data-property-id="P1476"] .wikibase-snakview-value span')?.innerText ?? "";
+                    }
+                }
                 if (oldTitle != null){
                     clearInterval(mainLoop);
                     var season = document.querySelector('[data-property-id="P4908"] .wikibase-snakview-value')?.innerText.split("/Staffel ").pop();
@@ -136,7 +143,7 @@
                     var response = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=claims&ids=${seriesId}`);
                     var data = await response.json();
                     fsid = data.entities[seriesId].claims.P5327?.[0].mainsnak.datavalue.value;
-					fsidNotSet = fsid == null;
+                    fsidNotSet = fsid == null;
                     if (fsidNotSet){
                         fsid = series.innerText.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/&/g,"and").replace(/[^a-z_\d ]/g,"").replace(/ +/g,"-");
                     }
@@ -209,7 +216,14 @@
         }), "set de label from Fernsehserien.de: " + selectedLabel );
 
         if (fsidNotSet){
-            setItem(seriesId, JSON.stringify({"claims":[{"mainsnak":{"snaktype":"value","property":"P5327","datavalue":{"value":fsid,"type":"string"}},"type":"statement","rank":"normal"}]}), "set ID from Fernsehserien.de: " + fsid);
+            (async ()=>{
+            var response = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=claims&ids=${seriesId}`);
+            var data = await response.json();
+            var fsidCheck = data.entities[seriesId].claims.P5327?.[0].mainsnak.datavalue.value;
+            if (fsidCheck == null){
+                setItem(seriesId, JSON.stringify({"claims":[{"mainsnak":{"snaktype":"value","property":"P5327","datavalue":{"value":fsid,"type":"string"}},"type":"statement","rank":"normal"}]}), "set ID from Fernsehserien.de: " + fsid);
+            }
+        })();
         }
     }
 
