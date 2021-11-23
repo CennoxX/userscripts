@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.5.0
+// @version      0.5.1
 // @description  Offer Fernsehserien.de label based on episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -138,7 +138,7 @@
                     fsid = data.entities[seriesId].claims.P5327?.[0].mainsnak.datavalue.value;
 					fsidNotSet = fsid == null;
                     if (fsidNotSet){
-                        fsid = series.innerText.toLowerCase().replace(/ /g,"-");
+                        fsid = series.innerText.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/&/g,"and").replace(/[^a-z_\d ]/g,"").replace(/ +/g,"-");
                     }
                     var epGuide = `https://www.fernsehserien.de/${fsid}/episodenguide`;
                     //console.clear();
