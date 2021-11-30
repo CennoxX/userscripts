@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Google Tasks Desktop
-// @version      0.2.1
+// @version      0.2.2
 // @description  Change the appearance to tasks.google.com
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
