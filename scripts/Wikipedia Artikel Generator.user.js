@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.0.0
+// @version      1.0.1
 // @description  Erstelle Grundgerüste für Wikipedia-Artikel aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -98,7 +98,7 @@
         //debut
         let credit = filmography[0];
         let yearText = "";
-        if (credit.yearFrom == credit.yearTo){
+        if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
             yearText = credit.yearFrom;
         }else{
             yearText = `${credit.yearFrom} bis ${credit.yearTo}`
