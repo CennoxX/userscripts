@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.0.1
+// @version      1.1.0
 // @description  Erstelle Grundgerüste für Wikipedia-Artikel aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -977,6 +977,7 @@
             "mode": "cors"
         });
         var obj = await resp.json();
-        return obj.results.bindings[0].source.value;
+        var result = obj.results.bindings[0];
+        return Object.keys(result).length?result.source.value:"Fehler bei Artikelgenerierung.\nDas Script befindet sich derzeit in Entwicklung.\nZurzeit werden Biografien unterstützt, vor allem bei Schauspielerbiografien werden gute Ergebnisse erzielt.";
     }
 })();
