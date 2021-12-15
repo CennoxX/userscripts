@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
 // @version      1.1.0
-// @description  Erstelle Grundgerüste für Wikipedia-Artikel aus Wikidata-Daten
+// @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515

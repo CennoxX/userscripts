@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gmail Calender Connector
 // @version      1.0.2
-// @description  Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus das Datum aus.
+// @description  Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515

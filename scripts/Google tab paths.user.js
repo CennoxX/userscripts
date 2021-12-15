@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Google tab paths
 // @version      0.7.1
-// @description  Use tabs to choose results
+// @description  Use tabs to choose the Google search results
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515

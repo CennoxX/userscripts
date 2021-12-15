@@ -2,7 +2,7 @@
 Userscripts [published at greasyfork](https://greasyfork.org/de/users/21515-cesar-bernard). The userscripts listed here are only tested with [Firefox](https://www.mozilla.org/de/firefox/new/) and [Tampermonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/).
 
 ###### [Spotify hotkeys](https://greasyfork.org/scripts/31978-spotify-hotkeys/)
-Allow hotkeys and media keys to control the Spotify web player from any tab
+Allows hotkeys and media keys to control the Spotify web player from any tab
 
 <details>
 <summary>details</summary>
@@ -54,7 +54,7 @@ This script redirects to the last.fm-page of the own language, if it is availabl
 </details>
 
 ###### [Google Tasks Desktop](https://greasyfork.org/scripts/429123-google-tasks-desktop/)
-Change the appearance of fullscreen-for-googletasks.com to resemble tasks.google.com more
+Changes the appearance of fullscreen-for-googletasks.com to resemble tasks.google.com
 
 <details>
 <summary>details</summary>
@@ -67,7 +67,7 @@ Remove the yellowish theme of fullscreen-for-googletasks.com and change the colo
 </details>
 
 ###### [JSON-LD from IMDb to QuickStatements](https://greasyfork.org/scripts/377488-json-ld-from-imdb-to-quickstatements/)
-Get data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
+Gets data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
 
 <details>
 <summary>details</summary>
@@ -80,7 +80,7 @@ To do so, it loads the <a href="http://json-ld.org/">JSON-LD</a> of currently op
 </details>
 
 ###### [Get label from Fernsehserien.de](https://greasyfork.org/scripts/429117-get-label-from-fernsehserien-de/)
-Offer Fernsehserien.de label based on episode number or title as Wikidata label
+Offers Fernsehserien.de labels based on the episode number or title as Wikidata label
 
 <details>
 <summary>details</summary>
@@ -103,7 +103,7 @@ Dieses Script ermittelt bei Anlage eines Kalendereintrages aus Googlemail über 
 </details>
 
 ###### [Filmografie von IMDb nach Wikipedia](https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/)
-Wandle die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um.
+Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 
 <details>
 <summary>details</summary>
@@ -119,7 +119,7 @@ Um die Filmografie zu generieren, kann im Menü des Benutzerskripts auf "Filmogr
 </details>
 
 ###### [Wikipedia Artikel Generator](https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/)
-Erstelle Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
+Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 
 <details>
 <summary>details</summary>

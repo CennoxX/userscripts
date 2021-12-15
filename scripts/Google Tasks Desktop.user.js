@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Google Tasks Desktop
 // @version      0.2.2
-// @description  Change the appearance to tasks.google.com
+// @description  Changes the appearance of fullscreen-for-googletasks.com to resemble tasks.google.com
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515

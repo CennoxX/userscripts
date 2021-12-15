@@ -1,10 +1,9 @@
 // ==UserScript==
 // @name         closeDoublePage
 // @version      0.4.2
-// @description  Closes the old tab, if a new one with the same URL emerges.
+// @description  Closes the old tab, if a new one with the same URL emerges
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
-// @homepage     https://twitter.com/CennoxX
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
 // @downloadURL  https://greasyfork.org/scripts/38471-closedoublepage/code/closeDoublePage.user.js

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JSON-LD from IMDb to QuickStatements
 // @version      0.8.3
-// @description  Get data from JSON-LD from IMDb to QuickStatements, to publish it on Wikidata
+// @description  Gets data from JSON-LD from IMDb to QuickStatements, to publish it on Wikidata
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515

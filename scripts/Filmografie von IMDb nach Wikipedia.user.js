@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
 // @version      2.2.5
-// @description  Wandle die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um.
+// @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
