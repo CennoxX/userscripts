@@ -86,7 +86,8 @@ Offers Fernsehserien.de labels based on the episode number or title as Wikidata 
 <summary>details</summary>
 
 <!-- START ./docs/Get label from Fernsehserien.de.md -->
-This script shows possible labels for Wikidata items of TV episodes, which can be added with one click after verifying them. The titles come from Fernsehserien.de and are determined by the original title of the episode and the episode number. The Fernsehserien.de ID of the series is determined from the corresponding TV series wikidata item. If there is no ID, the script tries to guess one. The reliability of the label is expressed in colors (red, yellow, green). The link to the Fernsehserien.de episode guide is also added.<!-- END ./docs/Get label from Fernsehserien.de.md -->
+This script shows possible labels for Wikidata items of TV episodes, which can be added with one click after verifying them. The titles come from Fernsehserien.de and are determined by the original title of the episode and the episode number. The Fernsehserien.de ID of the series is determined from the corresponding TV series Wikidata item. If there is no ID, the script tries to guess one. The reliability of the label is expressed in colors (red, yellow, green). The link to the Fernsehserien.de episode guide is also added.
+<!-- END ./docs/Get label from Fernsehserien.de.md -->
 
 </details>
 
