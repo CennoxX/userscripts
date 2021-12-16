@@ -5,6 +5,7 @@ on:
     paths:
       - docs/**
       - .github/scripts/**
+      - README.md
     branches:
       - main
   workflow_dispatch:
