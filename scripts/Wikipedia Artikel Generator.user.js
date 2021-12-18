@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.1.1
+// @version      1.1.2
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -65,7 +65,7 @@
     function getCareerText(filmography,isFemale,surname){
         filmography.forEach(i => {i.type=(i.type==""?"Film":i.type)});
         let careerText = "";
-                let careerTemplates = [
+        let careerTemplates = [
             {"id": 0, get text() {return `${(isFemale?"Ihr":"Sein")} Debüt als Schauspieler${(isFemale?"in":"")} hatte ${(useName?surname:isFemale?"sie":"er")} ${yearText} in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": false, "multiple": false, "type": "serie"},
             {"id": 1, get text() {return `${(isFemale?"Ihren":"Seinen")} ersten Auftritt absolvierte ${(useName?surname:isFemale?"sie":"er")} ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 2, get text() {return `${(useName?(surname+"s").replace(/ss$/,"s"):isFemale?"Ihr":"Sein")} erster Auftritt in einer ${credit.type} war ${yearText} in ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
@@ -135,18 +135,16 @@
         //debut multiple episodes
         useName = true;
         credit = filmography.find(i => i.numberOfEpisodes > 1);
-        if (creditDebut != credit && creditDebutType != credit){
-            if (credit != null){
-                if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
-                    yearText = credit.yearFrom;
-                }else{
-                    yearText = `${credit.yearFrom} bis ${credit.yearTo}`
-                }
-                possibleCreditTexts = careerTemplates.filter(i => i.multiple || i.multiple == null
-                                                             && (i.debuttype || i.debuttype == null));
-                creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
-                careerText += " " + creditText.text;
+        if (credit != null && creditDebut != credit && creditDebutType != credit){
+            if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
+                yearText = credit.yearFrom;
+            }else{
+                yearText = `${credit.yearFrom} bis ${credit.yearTo}`
             }
+            possibleCreditTexts = careerTemplates.filter(i => i.multiple || i.multiple == null
+                                                         && (i.debuttype || i.debuttype == null));
+            creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
+            careerText += " " + creditText.text;
         }
         let creditOtherType = credit;
         //credit with most episodes
@@ -154,19 +152,17 @@
         useName = false;
         debuttype = false;
         credit = filmography.reduce((prev, current) => (prev.numberOfEpisodes > current.numberOfEpisodes) ? prev : current);
-        if (credit != creditDebut && credit != creditDebutType && credit != creditOtherType){
-            if (credit != null){
-                if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
-                    yearText = credit.yearFrom;
-                }else{
-                    yearText = `${credit.yearFrom} bis ${credit.yearTo}`
-                }
-                possibleCreditTexts = careerTemplates.filter(i => (i.multiple || i.multiple == null)
-                                                             && (!i.debuttype || i.debuttype == null)
-                                                             && (!i.debut || i.debut == null));
-                creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
-                careerText += " " + creditText.text;
+        if (credit != null && credit != creditDebut && credit != creditDebutType && credit != creditOtherType && credit.numberOfEpisodes > 1){
+            if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
+                yearText = credit.yearFrom;
+            }else{
+                yearText = `${credit.yearFrom} bis ${credit.yearTo}`
             }
+            possibleCreditTexts = careerTemplates.filter(i => (i.multiple || i.multiple == null)
+                                                         && (!i.debuttype || i.debuttype == null)
+                                                         && (!i.debut || i.debut == null));
+            creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
+            careerText += " " + creditText.text;
         }
         return careerText;
     }
