@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.1.2
+// @version      1.2.0
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -80,9 +80,9 @@
             {"id": 10, get text() {return `${yearText} erhielt ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype?"erstmals ":"")}eine wiederkehrende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
             {"id": 11, get text() {return `${yearText} erschien ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 12, get text() {return `${yearText} folgte ${(useName?surname:isFemale?"ihr":"sein")} Spielfilmdebüt in dem ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": true, "multiple": false, "type": "film"},
-            {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste ${(credit.numberOfEpisodes > 1?"wiederkehrende ":"")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": true, "multiple": null, "type": "serie"},
-            {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste Filmrolle in ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "film"},
-            {"id": 14, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} bei dem ${credit.type} ''${credit.getTitlePart()}'' eine Rolle inne.`;}, "debut": false, "debuttype": false, "multiple": false, "type": "film"},
+            {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste ${(credit.numberOfEpisodes > 1?"wiederkehrende ":"")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": null, "debuttype": true, "multiple": null, "type": "serie"},
+            {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste Filmrolle in ''${credit.getTitlePart()}''.`;}, "debut": null, "debuttype": true, "multiple": false, "type": "film"},
+            {"id": 14, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} bei dem ${credit.type} ''${credit.getTitlePart()}'' ${debut?"erstmals ":""}eine Rolle inne.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
             {"id": 15, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' eine Rolle inne.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in dem ${credit.type} ''${credit.getTitlePart()}'' einen ${debut?"ersten ":""}Auftritt.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
             {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihren":"seinen")} ersten Fernsehauftritt.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
@@ -95,76 +95,55 @@
             {"id": 23, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' hatte ${(useName?surname:isFemale?"sie":"er")} ${yearText} ${(debuttype?"erstmals ":"")}eine wiederkehrende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
             {"id": 24, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' spielte ${(useName?surname:isFemale?"sie":"er")} ${yearText} ${(debuttype?"erstmals ":"")}eine durchgehende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
         ];
-        //debut
-        let credit = filmography[0];
+
+        let credit = {};
         let yearText = "";
-        if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
-            yearText = credit.yearFrom;
-        }else{
-            yearText = `${credit.yearFrom} bis ${credit.yearTo}`
-        }
         let useName = true;
         let debut = true;
         let debuttype = false;
-        let possibleCreditTexts = careerTemplates.filter(i => (i.debut || i.debut == null)
-                                                         && credit.type.toLowerCase().includes(i.type)
-                                                         && (credit.numberOfEpisodes > 1 == i.multiple || i.multiple == null)
-                                                         && i.id != "0");//id 0 can't be first text
-        let creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
-        careerText += creditText.text;
-        let creditDebut = credit;
+        let creditList = [];
+		
+        //debut
+        creditList.push(0);
+		
         //debut other type
-        useName = false;
-        let type = credit.type == "Film"?"film":"serie";
-        debut = false;
-        debuttype = true;
-        credit = filmography.find(i => !(i.type.toLowerCase().includes(type)));
-        if (credit != null){
-            if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
-                yearText = credit.yearFrom;
-            }else{
-                yearText = `${credit.yearFrom} bis ${credit.yearTo}`
-            }
-            possibleCreditTexts = careerTemplates.filter(i => (i.debuttype || i.debuttype == null)
-                                                         && credit.type.toLowerCase().includes(i.type)
-                                                         && (credit.numberOfEpisodes > 1 == i.multiple || i.multiple == null));
-            creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
-            careerText += " " + creditText.text;
+        let type = filmography[0].type == "Film"?"film":"serie";
+        let cIndex = filmography.findIndex(i => !(i.type.toLowerCase().includes(type)));
+        if (cIndex != -1){
+            creditList.push(cIndex);
         }
-        let creditDebutType = credit;
+		
         //debut multiple episodes
-        useName = true;
-        credit = filmography.find(i => i.numberOfEpisodes > 1);
-        if (credit != null && creditDebut != credit && creditDebutType != credit){
+        cIndex = filmography.findIndex(i => i.numberOfEpisodes > 1);
+        if (cIndex != -1){
+            creditList.push(cIndex);
+        }
+		
+        //most episodes
+        cIndex = filmography.reduce((maxIndex, current, curIndex, array) => (current.numberOfEpisodes > array[maxIndex].numberOfEpisodes) ? curIndex : maxIndex, 0);
+        creditList.push(cIndex);
+		
+        //generate text from credits
+        creditList = [...new Set(creditList.sort((a,b)=>a-b))];
+        creditList.forEach((creditIndex, index) => {
+            credit = filmography[creditIndex];
             if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
                 yearText = credit.yearFrom;
             }else{
                 yearText = `${credit.yearFrom} bis ${credit.yearTo}`
             }
-            possibleCreditTexts = careerTemplates.filter(i => i.multiple || i.multiple == null
-                                                         && (i.debuttype || i.debuttype == null));
-            creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
-            careerText += " " + creditText.text;
-        }
-        let creditOtherType = credit;
-        //credit with most episodes
-        //if not same as other
-        useName = false;
-        debuttype = false;
-        credit = filmography.reduce((prev, current) => (prev.numberOfEpisodes > current.numberOfEpisodes) ? prev : current);
-        if (credit != null && credit != creditDebut && credit != creditDebutType && credit != creditOtherType && credit.numberOfEpisodes > 1){
-            if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
-                yearText = credit.yearFrom;
-            }else{
-                yearText = `${credit.yearFrom} bis ${credit.yearTo}`
-            }
-            possibleCreditTexts = careerTemplates.filter(i => (i.multiple || i.multiple == null)
-                                                         && (!i.debuttype || i.debuttype == null)
-                                                         && (!i.debut || i.debut == null));
-            creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
-            careerText += " " + creditText.text;
-        }
-        return careerText;
+            useName = !(index % 3);
+            debut = creditIndex == 0;
+            debuttype = !debut && (!filmography.slice(0,index-1).some(i => i.type.endsWith(filmography[creditIndex].type.toLowerCase().endsWith("film")?"film":"serie")) || !filmography.slice(0,creditList[index]-1).some(i => i.numberOfEpisodes > 1));
+            let possibleCreditTexts = careerTemplates.filter(i => (i.debut == debut || i.debut == null)
+                                                             && (i.debuttype == debuttype || i.debuttype == null)
+                                                             && credit.type.toLowerCase().includes(i.type)
+                                                             && (credit.numberOfEpisodes > 1 == i.multiple || i.multiple == null));
+            console.log(possibleCreditTexts);
+            var creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
+            careerText += creditText.text + " ";
+        });
+        return careerText.trim();
     }
     function getEpisodeNumberText(number){
         var result;
