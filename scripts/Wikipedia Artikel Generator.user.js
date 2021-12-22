@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.0
+// @version      1.3.1
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -121,7 +121,7 @@
             {"id": 17, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} mit ${getEpisodeNumberText(credit.numberOfEpisodes)} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihr":"sein")} Fernsehdebüt.`;}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 18, get text() {return `${yearText} spielte ${(useName?surname:isFemale?"sie":"er")} eine Rolle in dem ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": false, "multiple": false, "type": "film"},
             {"id": 19, get text() {return `${yearText} spielte ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' mit.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 20, get text() {return `${yearText} stand ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debut?"erstmals ":"")}für das Fernsehen vor der Kamera.`;}, "debut": null, "debuttype": null, "multiple": false, "type": "serie"},
+            {"id": 20, get text() {return `${yearText} stand ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debut||debuttype?"erstmals ":"")}für das Fernsehen vor der Kamera.`;}, "debut": null, "debuttype": null, "multiple": false, "type": "serie"},
             {"id": 21, get text() {return `${yearText} war ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' ${(debut?"erstmals ":"")}im Fernsehen zu sehen.`;}, "debut": null, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 22, get text() {return `${yearText} war ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`;}, "debut": false, "debuttype": false, "multiple": true, "type": "serie"},
             {"id": 23, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' hatte ${(useName?surname:isFemale?"sie":"er")} ${yearText} ${(debuttype?"erstmals ":"")}eine wiederkehrende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
