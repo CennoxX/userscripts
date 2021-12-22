@@ -16,6 +16,7 @@
 // @connect      resolve.eidr.org
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=de.wikipedia.org
 // @grant        GM.xmlHttpRequest
+// @grant        unsafeWindow
 // @license      MIT
 // ==/UserScript==
 /* jshint esversion: 8 */
@@ -34,35 +35,66 @@
     let wikiItem = (await getEntitiesFromIds(wikidataId,"sitelinks|claims|labels|aliases|descriptions"))[0];
     wikiText = await getArticleFromSPARQL(wikidataId);
     wikiText = wikiText.replace(/\n\n\n+/g,"\n\n").replace(/  +/g," ");
-    $("#wpTextbox1").textSelection("setContents", wikiText.replace("{{FILMOGRAPHY}}","== Filmografie ==\n..."));
+    $("#wpTextbox1").textSelection("setContents", wikiText);
     //Filmografie
-    let imdbid = getPropertyFromItem(wikiItem,"P345");
-    let filmographyText = "";
     let isFemale = false;
     let surname = "";
+    let creditList = [];
     let filmography = [];
+    let filmographyText = "";
+    let filmographyStart = wikiText.indexOf("== Filmografie ==");
+    let filmographyEnd = filmographyStart + 26;
+    let imdbid = getPropertyFromItem(wikiItem,"P345");
     if (imdbid != "")
     {
-        filmographyText = await ladeFilmografie(imdbid);
+        var syntaxButton;
+        if (syntaxButton = document.querySelector("#mw-editbutton-codemirror>a[aria-pressed='false']")){
+            syntaxButton.click()
+        }
         isFemale = getPropertyFromItem(wikiItem,"P21") == "Q6581072";
         surname = getPropFromItem(wikiItem,"labels").split(" ").pop();
-        wikiText = wikiText.replace(/({{FILMOGRAPHY}})/,"$1\n\n"+filmographyText);
-        filmographyText = getCareerText(filmography,isFemale,surname);
-    }
-    //result
-    $("#wpTextbox1").textSelection("setContents", wikiText.replace("{{FILMOGRAPHY}}",filmographyText));
+        filmographyText = await ladeFilmografie(imdbid);
+        unsafeWindow.checkboxes = function(index = -1){
+            setTimeout(()=>{
+                if (index != -1){
+                    if (creditList.includes(index)){
+                        creditList = creditList.filter(c => c != index);
+                    }else{
+                        creditList.push(index);
+                    }
+                    reloadCareerText();
+                }
+                var filmographyLineNumber = wikiText.substring(0, filmographyStart).split("\n").length + (creditList.length == 0?0:2);
+                var lines = [...document.querySelectorAll(".CodeMirror-lines .noime div div div")];
+                lines.slice(filmographyLineNumber,filmography.length+filmographyLineNumber)
+                    .forEach(c => {c.innerHTML = "<input type='checkbox' onclick='checkboxes(" +Number(c.innerHTML - filmographyLineNumber - 1) + ")'/>"});
+                creditList.forEach(i => {lines[filmographyLineNumber+i].querySelector("input").checked=true});
+            },100);
+        };
+        unsafeWindow.checkboxes(-1);
+        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart, end: filmographyEnd});
+        $("#wpTextbox1").textSelection("replaceSelection", filmographyText);
+        filmographyEnd = filmographyStart;
+        reloadCareerText(true);
 
-    var elem = document.querySelector(".group-insert");
-    var span = document.createElement("span");
-    span.innerHTML = '<span class="tool oo-ui-buttonElement oo-ui-buttonElement-frameless oo-ui-iconElement"><a class="oo-ui-buttonElement-button" title="Karriere-Text neu generieren" tabindex="0"><span class="oo-ui-iconElement-icon oo-ui-icon-reload"></span></a></span>';
-    elem.appendChild(span);
-    span.addEventListener("click", reloadCareerText);
-    function reloadCareerText(){
-        filmographyText = getCareerText(filmography,isFemale,surname);
-        $("#wpTextbox1").textSelection("setContents", wikiText.replace("{{FILMOGRAPHY}}",filmographyText));
+        var elem = document.querySelector(".group-insert");
+        var span = document.createElement("span");
+        span.innerHTML = '<span class="tool oo-ui-buttonElement oo-ui-buttonElement-frameless oo-ui-iconElement"><a class="oo-ui-buttonElement-button" title="Karriere-Text neu generieren" tabindex="0"><span class="oo-ui-iconElement-icon oo-ui-icon-reload"></span></a></span>';
+        elem.appendChild(span);
+        span.addEventListener("click", () => reloadCareerText(false));
+    }else{
+        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart, end: filmographyEnd});
+        $("#wpTextbox1").textSelection("replaceSelection", "");
     }
     //methods
-    function getCareerText(filmography,isFemale,surname){
+    function reloadCareerText(firstReload = false){
+        filmographyText = getCareerText(filmography,isFemale,surname,firstReload);
+        filmographyText += filmographyText.length!=0?"\n\n":"";
+        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart, end: filmographyEnd});
+        $("#wpTextbox1").textSelection("replaceSelection", filmographyText);
+        filmographyEnd = filmographyStart + filmographyText.length;
+    }
+    function getCareerText(filmography, isFemale, surname, firstReload = false){
         filmography.forEach(i => {i.type=(i.type==""?"Film":i.type)});
         let careerText = "";
         let careerTemplates = [
@@ -84,7 +116,7 @@
             {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste Filmrolle in ''${credit.getTitlePart()}''.`;}, "debut": null, "debuttype": true, "multiple": false, "type": "film"},
             {"id": 14, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} bei dem ${credit.type} ''${credit.getTitlePart()}'' ${debut?"erstmals ":""}eine Rolle inne.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
             {"id": 15, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' eine Rolle inne.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in dem ${credit.type} ''${credit.getTitlePart()}'' einen ${debut?"ersten ":""}Auftritt.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
+            {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in dem ${credit.type} ''${credit.getTitlePart()}'' ${debut?(isFemale?"ihren ":"seinen ")+"ersten":"einen"} Auftritt.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
             {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihren":"seinen")} ersten Fernsehauftritt.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
             {"id": 17, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} mit ${getEpisodeNumberText(credit.numberOfEpisodes)} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihr":"sein")} Fernsehdebüt.`;}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 18, get text() {return `${yearText} spielte ${(useName?surname:isFemale?"sie":"er")} eine Rolle in dem ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": false, "multiple": false, "type": "film"},
@@ -101,45 +133,44 @@
         let useName = true;
         let debut = true;
         let debuttype = false;
-        let creditList = [];
-		
-        //debut
-        creditList.push(0);
-		
-        //debut other type
-        let type = filmography[0].type == "Film"?"film":"serie";
-        let cIndex = filmography.findIndex(i => !(i.type.toLowerCase().includes(type)));
-        if (cIndex != -1){
+
+        if (firstReload){
+            //debut
+            creditList.push(0);
+
+            //debut other type
+            let type = filmography[0].type.toLowerCase().endsWith("film")?"film":"serie";
+            let cIndex = filmography.findIndex(i => !(i.type.toLowerCase().includes(type)));
+            if (cIndex != -1){
+                creditList.push(cIndex);
+            }
+
+            //debut multiple episodes
+            cIndex = filmography.findIndex(i => i.numberOfEpisodes > 1);
+            if (cIndex != -1){
+                creditList.push(cIndex);
+            }
+
+            //most episodes
+            cIndex = filmography.reduce((maxIndex, current, curIndex, array) => (current.numberOfEpisodes > array[maxIndex].numberOfEpisodes) ? curIndex : maxIndex, 0);
             creditList.push(cIndex);
         }
-		
-        //debut multiple episodes
-        cIndex = filmography.findIndex(i => i.numberOfEpisodes > 1);
-        if (cIndex != -1){
-            creditList.push(cIndex);
-        }
-		
-        //most episodes
-        cIndex = filmography.reduce((maxIndex, current, curIndex, array) => (current.numberOfEpisodes > array[maxIndex].numberOfEpisodes) ? curIndex : maxIndex, 0);
-        creditList.push(cIndex);
-		
+
         //generate text from credits
-        creditList = [...new Set(creditList.sort((a,b)=>a-b))];
+        creditList = [...new Set(creditList.sort((a,b)=>a-b))]; //remove duplicates, sort by index
         creditList.forEach((creditIndex, index) => {
             credit = filmography[creditIndex];
-            if (credit.yearFrom == credit.yearTo || credit.yearTo == 0){
-                yearText = credit.yearFrom;
-            }else{
-                yearText = `${credit.yearFrom} bis ${credit.yearTo}`
+            yearText = credit.yearFrom;
+            if (credit.yearFrom != credit.yearTo && credit.yearTo != 0){
+                yearText += ` bis ${credit.yearTo}`
             }
             useName = !(index % 3);
             debut = creditIndex == 0;
-            debuttype = !debut && (!filmography.slice(0,index-1).some(i => i.type.endsWith(filmography[creditIndex].type.toLowerCase().endsWith("film")?"film":"serie")) || !filmography.slice(0,creditList[index]-1).some(i => i.numberOfEpisodes > 1));
+            debuttype = !debut && (filmography.find(i => i.type.toLowerCase().endsWith(credit.type.toLowerCase().endsWith("film")?"film":"serie")) == credit || filmography.find(i => i.numberOfEpisodes > 1) == credit);
             let possibleCreditTexts = careerTemplates.filter(i => (i.debut == debut || i.debut == null)
                                                              && (i.debuttype == debuttype || i.debuttype == null)
                                                              && credit.type.toLowerCase().includes(i.type)
                                                              && (credit.numberOfEpisodes > 1 == i.multiple || i.multiple == null));
-            console.log(possibleCreditTexts);
             var creditText = possibleCreditTexts[Math.floor(Math.random() * possibleCreditTexts.length)];
             careerText += creditText.text + " ";
         });
@@ -941,7 +972,7 @@
   BIND(CONCAT(COALESCE(CONCAT("\\n[[Kategorie:Geboren ", STR(YEAR(?bDate)), "]]"), ""), COALESCE(CONCAT("\\n[[Kategorie:Gestorben ", STR(YEAR(?dDate)), "]]"), ""), CONCAT("\\n[[Kategorie:", IF(?sx = wd:Q6581097, "Mann", "Frau"), "]]")) AS ?categories)
   BIND(CONCAT(COALESCE(?workCats, ""), COALESCE(?schoolCatPart, ""), COALESCE(?countryCats, ""), ?categories) AS ?cats)
   BIND(CONCAT("\\n\\n{{Personendaten", "\\n|NAME=", REPLACE(?name, "(.*) (.*)", "$2, $1"), "\\n|ALTERNATIVNAMEN=", COALESCE(?alias, ""), "\\n|KURZBESCHREIBUNG=", COALESCE(?description, REPLACE(CONCAT(?citizens, " ", REPLACE(?works, "° ([^°]*$)", " und $1")), "° ", ", ")), "\\n|GEBURTSDATUM=", COALESCE(CONCAT(STR(DAY(?bDate)), ". ", ?bMonth, " ", STR(YEAR(?bDate))), ""), "\\n|GEBURTSORT=", COALESCE(CONCAT(?bPlaceText, COALESCE(CONCAT(", ", ?bStateText), "")), ""), "\\n|STERBEDATUM=", COALESCE(CONCAT(STR(DAY(?dDate)), ". ", ?dMonth, " ", STR(YEAR(?dDate))), ""), "\\n|STERBEORT=", COALESCE(CONCAT(?dPlaceText, COALESCE(CONCAT(", ", ?dStateText), "")), ""), "\\n}}") AS ?persondata)
-  BIND(CONCAT(?imagePart, ?namePart, ?dates, ?descriptionPart, ?knownPart, ".\\n\\n== Leben ==\\n", ?born, ?education, COALESCE(?partnerPart, "\\n\\n"), COALESCE(?spousePart, ""), ?connection, COALESCE(?kidsPart, ""), COALESCE(?lPlacesPart, ""), "\\n\\n{{FILMOGRAPHY}}\\n\\n", ?weblinks, ?references, ?normdata, ?sortorder, ?cats, ?persondata) AS ?source)
+  BIND(CONCAT(?imagePart, ?namePart, ?dates, ?descriptionPart, ?knownPart, ".\\n\\n== Leben ==\\n", ?born, ?education, COALESCE(?partnerPart, "\\n\\n"), COALESCE(?spousePart, ""), ?connection, COALESCE(?kidsPart, ""), COALESCE(?lPlacesPart, ""), "\\n\\n== Filmografie ==\\nLädt ...\\n\\n", ?weblinks, ?references, ?normdata, ?sortorder, ?cats, ?persondata) AS ?source)
 }`;
         var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
             "headers": {
