@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.1
+// @version      1.3.2
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -51,7 +51,7 @@
         if (syntaxButton = document.querySelector("#mw-editbutton-codemirror>a[aria-pressed='false']")){
             syntaxButton.click()
         }
-        isFemale = getPropertyFromItem(wikiItem,"P21") == "Q6581072";
+        isFemale = getPropertyFromItem(wikiItem,"P21").id == "Q6581072";
         surname = getPropFromItem(wikiItem,"labels").split(" ").pop();
         filmographyText = await ladeFilmografie(imdbid);
         unsafeWindow.checkboxes = function(index = -1){
@@ -702,7 +702,7 @@
   }
   #Land
   OPTIONAL {
-    SELECT ?item (GROUP_CONCAT(DISTINCT ?citizenWP; SEPARATOR = "° ") AS ?citizens) (GROUP_CONCAT(DISTINCT ?countryCatText; SEPARATOR = " ") AS ?countryCats) WHERE {
+    SELECT ?item (CONCAT(GROUP_CONCAT(DISTINCT ?citizenWP; SEPARATOR = "° ")," ") AS ?citizens) (GROUP_CONCAT(DISTINCT ?countryCatText; SEPARATOR = " ") AS ?countryCats) WHERE {
       ?item wdt:P27 ?country.
       ?country wdt:P1792 _:t2.
       _:t2 rdfs:label ?countryCat.
@@ -956,7 +956,7 @@
   }
   BIND(CONCAT("'''", ?name, "'''") AS ?namePart)
   BIND(COALESCE(CONCAT(" (* [[", STR(DAY(?bDate)), ". ", ?bMonth, "]] [[", STR(YEAR(?bDate)), "]]", COALESCE(CONCAT(" in ", ?bPlaceText, COALESCE(CONCAT(", ", ?bStateText), "")), ""), COALESCE(CONCAT("; † [[", STR(DAY(?dDate)), ". ", ?dMonth, "]] [[", STR(YEAR(?dDate)), "]]", COALESCE(CONCAT(" in ", ?dPlaceText, COALESCE(CONCAT(", ", ?dStateText), "")), ""), ")"), ")")), "") AS ?dates)
-  BIND(REPLACE(CONCAT(" ist ", IF(?sx = wd:Q6581097, "ein ", "eine "), COALESCE(CONCAT(?citizens, " ", REPLACE(?works, "° ([^°]*$)", " und $1")), ?description)), "° ", ", ") AS ?descriptionPart)
+  BIND(REPLACE(CONCAT(" ist ", IF(?sx = wd:Q6581097, "ein ", "eine "), COALESCE(CONCAT(COALESCE(?citizens, ""), REPLACE(?works, "° ([^°]*$)", " und $1")), ?description)), "° ", ", ") AS ?descriptionPart)
   BIND(REPLACE(COALESCE(CONCAT(IF(?sx = wd:Q6581097, ", der ", ", die "), "bekannt ist für ", REPLACE(?knowns, "° ([^°]*$)", " und $1")), ""), "° ", ", ") AS ?knownPart)
   BIND(IF((BOUND(?bPlace)) || (BOUND(?bDate)), CONCAT(?name, " wurde ", COALESCE(CONCAT(STR(YEAR(?bDate)), " "), ""), COALESCE(CONCAT("in ", ?bPlaceText), ""), COALESCE(CONCAT(", im US-Bundesstaat ", ?bStateText), ""), " geboren."), "") AS ?born)
   BIND(REPLACE(COALESCE(CONCAT(IF(?sx = wd:Q6581097, " Er", " Sie"), " besuchte ", REPLACE(?schools, "° ([^°]*$)", " und $1"), ". "), ""), "° ", ", ") AS ?education)
@@ -971,7 +971,7 @@
   BIND(CONCAT("\\n\\n{{SORTIERUNG:", REPLACE(REPLACE(?name, "(.*) (.*)", "$2, $1"), "\\\\.", ""), "}}") AS ?sortorder)
   BIND(CONCAT(COALESCE(CONCAT("\\n[[Kategorie:Geboren ", STR(YEAR(?bDate)), "]]"), ""), COALESCE(CONCAT("\\n[[Kategorie:Gestorben ", STR(YEAR(?dDate)), "]]"), ""), CONCAT("\\n[[Kategorie:", IF(?sx = wd:Q6581097, "Mann", "Frau"), "]]")) AS ?categories)
   BIND(CONCAT(COALESCE(?workCats, ""), COALESCE(?schoolCatPart, ""), COALESCE(?countryCats, ""), ?categories) AS ?cats)
-  BIND(CONCAT("\\n\\n{{Personendaten", "\\n|NAME=", REPLACE(?name, "(.*) (.*)", "$2, $1"), "\\n|ALTERNATIVNAMEN=", COALESCE(?alias, ""), "\\n|KURZBESCHREIBUNG=", COALESCE(?description, REPLACE(CONCAT(?citizens, " ", REPLACE(?works, "° ([^°]*$)", " und $1")), "° ", ", ")), "\\n|GEBURTSDATUM=", COALESCE(CONCAT(STR(DAY(?bDate)), ". ", ?bMonth, " ", STR(YEAR(?bDate))), ""), "\\n|GEBURTSORT=", COALESCE(CONCAT(?bPlaceText, COALESCE(CONCAT(", ", ?bStateText), "")), ""), "\\n|STERBEDATUM=", COALESCE(CONCAT(STR(DAY(?dDate)), ". ", ?dMonth, " ", STR(YEAR(?dDate))), ""), "\\n|STERBEORT=", COALESCE(CONCAT(?dPlaceText, COALESCE(CONCAT(", ", ?dStateText), "")), ""), "\\n}}") AS ?persondata)
+  BIND(CONCAT("\\n\\n{{Personendaten", "\\n|NAME=", REPLACE(?name, "(.*) (.*)", "$2, $1"), "\\n|ALTERNATIVNAMEN=", COALESCE(?alias, ""), "\\n|KURZBESCHREIBUNG=", COALESCE(?description, REPLACE(CONCAT(COALESCE(?citizens, ""), REPLACE(?works, "° ([^°]*$)", " und $1")), "° ", ", ")), "\\n|GEBURTSDATUM=", COALESCE(CONCAT(STR(DAY(?bDate)), ". ", ?bMonth, " ", STR(YEAR(?bDate))), ""), "\\n|GEBURTSORT=", COALESCE(CONCAT(?bPlaceText, COALESCE(CONCAT(", ", ?bStateText), "")), ""), "\\n|STERBEDATUM=", COALESCE(CONCAT(STR(DAY(?dDate)), ". ", ?dMonth, " ", STR(YEAR(?dDate))), ""), "\\n|STERBEORT=", COALESCE(CONCAT(?dPlaceText, COALESCE(CONCAT(", ", ?dStateText), "")), ""), "\\n}}") AS ?persondata)
   BIND(CONCAT(?imagePart, ?namePart, ?dates, ?descriptionPart, ?knownPart, ".\\n\\n== Leben ==\\n", ?born, ?education, COALESCE(?partnerPart, "\\n\\n"), COALESCE(?spousePart, ""), ?connection, COALESCE(?kidsPart, ""), COALESCE(?lPlacesPart, ""), "\\n\\n== Filmografie ==\\nLädt ...\\n\\n", ?weblinks, ?references, ?normdata, ?sortorder, ?cats, ?persondata) AS ?source)
 }`;
         var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
