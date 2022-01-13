@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.2
+// @version      1.3.3
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -83,8 +83,12 @@
         elem.appendChild(span);
         span.addEventListener("click", () => reloadCareerText(false));
     }else{
-        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart, end: filmographyEnd});
+        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart-2, end: filmographyEnd});
         $("#wpTextbox1").textSelection("replaceSelection", "");
+    }
+    if (wikiText == ""){
+        wikiText = "Fehler bei Artikelgenerierung.\nDas Script befindet sich derzeit in Entwicklung.\nZurzeit werden Biografien unterstützt, vor allem bei Schauspielerbiografien werden gute Ergebnisse erzielt.";
+        $("#wpTextbox1").textSelection("setContents", wikiText);
     }
     //methods
     function reloadCareerText(firstReload = false){
@@ -984,6 +988,6 @@
         });
         var obj = await resp.json();
         var result = obj.results.bindings;
-        return result.length && Object.keys(result[0]).length?result[0].source.value:"Fehler bei Artikelgenerierung.\nDas Script befindet sich derzeit in Entwicklung.\nZurzeit werden Biografien unterstützt, vor allem bei Schauspielerbiografien werden gute Ergebnisse erzielt.";
+        return result.length && Object.keys(result[0]).length?result[0].source.value:"";
     }
 })();
