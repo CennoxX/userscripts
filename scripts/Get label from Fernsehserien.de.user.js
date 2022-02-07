@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.6.1
+// @version      0.7.0
 // @description  Offers Fernsehserien.de labels based on the episode number or title as Wikidata label
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
@@ -152,7 +152,6 @@
                             fsid = series.innerText.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/&/g,"and").replace(/[^a-z_\d ]/g,"").replace(/ +/g,"-");
                         }
                         var epGuide = `https://www.fernsehserien.de/${fsid}/episodenguide`;
-                        //console.clear();
                         var result = await GM.xmlHttpRequest({
                             method: "GET",
                             url: epGuide,
@@ -164,7 +163,9 @@
                         html.innerHTML = result.responseText;
                         fsid = html.querySelector('meta[property="og:url"]').content.split("/")[3];
                         var ep = null;
-
+                        if (html.querySelector(".fs-fehlermeldung")?.innerText.includes("Fehler 404")){
+                            epGuide = "https://www.fernsehserien.de/suche/" + series.innerText;
+                        }
                         var deLabelsParent = $("#wb-item-" + itemId + " div.wikibase-entitytermsview-heading");
                         var deLabelsDOM = $('<div class="wikibase-entitytermsview-heading-labels">Bezeichnungen von <a id="fsLink" href="'+epGuide+'">Fernsehserien.de</a>:</div>');
                         var deLabelsDiv = $('<div class="wikibase-entitytermsview-labels"></div>');
