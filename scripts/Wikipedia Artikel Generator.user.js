@@ -1,13 +1,11 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.3
+// @version      1.3.4
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
-// @downloadURL  https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/code/Wikipedia%20Artikel%20Generator.user.js
-// @updateURL    https://greasyfork.org/scripts/430516-wikipedia-artikel-generator/code/Wikipedia%20Artikel%20Generator.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Wikipedia%20Artikel%20Generator]%20
 // @match        https://de.wikipedia.org/w/index.php?title=*&action=edit*
 // @match        https://de.wikipedia.org/wiki/*?action=edit*
@@ -224,7 +222,7 @@
         return result + " Folgen";
     }
     function getWikilinkFromItem(wikiItem){
-        let label = wikiItem.labels.de.value
+        let label = wikiItem.labels.de.value;
         if (Object.values(wikiItem.sitelinks).length != 0)
         {
             let sitelink = wikiItem.sitelinks.dewiki.title;
@@ -295,7 +293,7 @@
             let descriptionItems = JSON.parse(descriptionRequest.responseText);
             filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length!=1);
             promptText = "Wähle den passenden Eintrag:\n";
-            promptText += filteredDescriptionItems.map((i,e) => (Number(e+1) + ": "+i.labels.de.value+" ("+(i.descriptions.de?.value??"")+")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
+            promptText += filteredDescriptionItems.map((i,e) => (Number(e+1) + ": "+ (Object.keys(i.labels).length==0?"Unbekannt":i.labels.de.value) +" ("+(i.descriptions.de?.value??"")+")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
         }else{
             promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) direkt an:";
         }
