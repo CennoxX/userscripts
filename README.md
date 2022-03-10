@@ -91,6 +91,17 @@ This script shows possible labels for Wikidata items of TV episodes, which can b
 
 </details>
 
+###### [Wikidata Episode Generator](https://greasyfork.org/scripts/433232-wikidata-episode-generator/)
+Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
+
+<details>
+<summary>details</summary>
+
+<!-- START ./docs/Wikidata Episode Generator.md -->
+<!-- END ./docs/Wikidata Episode Generator.md -->
+
+</details>
+
 ### deutsche Scripte
 ##### [Gmail Calender Connector](https://greasyfork.org/scripts/33508-gmail-calender-connector/)
 Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
