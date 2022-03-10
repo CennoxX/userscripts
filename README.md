@@ -102,7 +102,7 @@ Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 <!-- START ./docs/Wikidata Episode Generator.md -->
 This script creates episode items for Wikidata based on Wikipedia episode list articles, IMDb and Fernsehserien.de. It includes basic properties for episodes, screenwriter and director are identified via Wikipedia links within the episode list, the network, original language and country via the series item from Wikidata. The IMDb-ID and the German label are matched by the episode title and number. 
 
-To generate the episode items open a Wikipedia article with an episode list. After clicking on "Convert episode list for Wikidata" in the userscript menu, the text for <a href="https://quickstatements.toolforge.org/">QuickStatements</a> is shown in the console and copied to the clipboard. The process is shown in the web console (<kbd>F12</kbd>).
+To generate the episode items, open a Wikipedia article with an episode list. After clicking on "Convert episode list for Wikidata" in the userscript menu, the web console (<kbd>F12</kbd>) shows the process of generating the items, including the text for <a href="https://quickstatements.toolforge.org/">QuickStatements</a>, which is also copied to the clipboard.
 
 <!-- END ./docs/Wikidata Episode Generator.md -->
 
