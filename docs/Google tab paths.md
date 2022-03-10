@@ -1,1 +1,1 @@
-This script allows to use the tab key to switch between the Google results.
+This script allows to use the <kbd>tab</kbd> key to switch between the Google results.
