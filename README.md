@@ -10,10 +10,10 @@ Allows hotkeys and media keys to control the Spotify web player from any tab
 <!-- START ./docs/Spotify hotkeys.md -->
 This script adds hotkeys to control the Spotify webplayer from any tab. Note that you have to reload all tabs after installation. It can be used with keyboard hotkeys or with <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaKeys">MediaKeys</a>.
 
-    [ctrl] + [alt] + [p] – play/pause
-    [ctrl] + [alt] + [s] – stop
-    [ctrl] + [alt] + [,] – previous title
-    [ctrl] + [alt] + [.] – next title
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>p</kbd> – play/pause
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>s</kbd> – stop
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>,</kbd> – previous title
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>.</kbd> – next title
 <!-- END ./docs/Spotify hotkeys.md -->
 
 </details>
@@ -25,7 +25,7 @@ Use tabs to choose the Google search results
 <summary>details</summary>
 
 <!-- START ./docs/Google tab paths.md -->
-This script allows to use the tab key to switch between the Google results.
+This script allows to use the <kbd>tab</kbd> key to switch between the Google results.
 <!-- END ./docs/Google tab paths.md -->
 
 </details>
@@ -101,7 +101,8 @@ Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 <!-- START ./docs/Wikidata Episode Generator.md -->
 This script creates episode items for Wikidata based on Wikipedia episode list articles, IMDb and Fernsehserien.de. It includes basic properties for episodes, screenwriter and director are identified via Wikipedia links within the episode list, the network, original language and country via the series item from Wikidata. The IMDb-ID and the German label are matched by the episode title and number. 
 
-To generate the episode items open a Wikipedia article with an episode list. After clicking on "Convert episode list for Wikidata" in the userscript menu, the text for <a href="https://quickstatements.toolforge.org/">QuickStatements</a> is shown in the console and copied to the clipboard. The process is shown in the web console ([F12]).
+To generate the episode items open a Wikipedia article with an episode list. After clicking on "Convert episode list for Wikidata" in the userscript menu, the text for <a href="https://quickstatements.toolforge.org/">QuickStatements</a> is shown in the console and copied to the clipboard. The process is shown in the web console (<kbd>F12</kbd>).
+
 <!-- END ./docs/Wikidata Episode Generator.md -->
 
 </details>
