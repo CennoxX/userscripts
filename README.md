@@ -87,6 +87,7 @@ Offers Fernsehserien.de labels based on the episode number or title as Wikidata 
 
 <!-- START ./docs/Get label from Fernsehserien.de.md -->
 This script shows possible labels for Wikidata items of TV episodes, which can be added with one click after verifying them. The titles come from Fernsehserien.de and are determined by the original title of the episode and the episode number. The Fernsehserien.de ID of the series is determined from the corresponding TV series Wikidata item. If there is no ID, the script tries to guess one. The reliability of the label is expressed in colors (red, yellow, green). The link to the Fernsehserien.de episode guide is also added.
+
 <!-- END ./docs/Get label from Fernsehserien.de.md -->
 
 </details>
@@ -98,6 +99,9 @@ Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 <summary>details</summary>
 
 <!-- START ./docs/Wikidata Episode Generator.md -->
+This script creates episode items for Wikidata based on Wikipedia episode list articles, IMDb and Fernsehserien.de. It includes basic properties for episodes, screenwriter and director are identified via Wikipedia links within the episode list, the network, original language and country via the series item from Wikidata. The IMDb-ID and the German label are matched by the episode title and number. 
+
+To generate the episode items open a Wikipedia article with an episode list. After clicking on "Convert episode list for Wikidata" in the userscript menu, the text for <a href="https://quickstatements.toolforge.org/">QuickStatements</a> is shown in the console and copied to the clipboard. The process is shown in the web console ([F12]).
 <!-- END ./docs/Wikidata Episode Generator.md -->
 
 </details>
