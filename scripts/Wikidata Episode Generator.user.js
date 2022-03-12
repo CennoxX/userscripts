@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.5.2
+// @version      0.5.3
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -89,16 +89,13 @@
         }
         var episodes = eps.map(i => {
             wikilinks = wikilinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1].split("|")[0]));
-            if (i.match("OriginalAirDate *= *(\.+) *\n")==null){console.log("ERROR: OriginalAirDate\n",i);}
-            if (i.match("DirectedBy *= *(\.+) *\n")==null){console.log("ERROR: DirectedBy\n",i);}
-            if (i.match("WrittenBy *= *(\.+) *\n")==null){console.log("ERROR: WrittenBy\n",i);}
             return {
                 "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *\n")??["",(console.log("ERROR: EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n")))])[1],
                 "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *\n")??["",(console.log("ERROR: EpisodeNumber\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n")))])[1],
                 "OT": (i.match("Title *= *(\.+) *\n")??["",(console.log("ERROR: EpisodeNumber\n",i),prompt("OT\n"+i.match("OT.*\n")))])[1].replace(/<!--.*?-->/i,""),
-                "EA": getDate(i.match("OriginalAirDate *= *(\.+) *\n")[1]),
-                "REG": [...new Set([...i.match("DirectedBy_?1?2? *= *(\.+) *\n")[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
-                "DRB": [...new Set([...i.match("WrittenBy_?1?2? *= *(\.+) *\n")[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))]
+                "EA": getDate((i.match("OriginalAirDate *= *(\.+) *\n")??["",(console.log("ERROR: OriginalAirDate\n",i),"")])[1]),
+                "REG": [...new Set([...(i.match("DirectedBy_?1?2? *= *(\.+) *\n")??["",(console.log("ERROR: DirectedBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
+                "DRB": [...new Set([...(i.match("WrittenBy_?1?2? *= *(\.+) *\n")??["",(console.log("ERROR: WrittenBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))]
             };
         });
         var seasonId = 0;
@@ -170,7 +167,11 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
         GM.setClipboard(output);
     }),"w");
     function getDate(episodeDate){
-        return episodeDate.replace(/{{Start date\|(\d+)\|(\d+)\|(\d+)}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
+        var result = episodeDate.replace(/{{start date(?:\|df=yes)?\|(\d+)\|(\d+)\|(\d+)(?:\|df=yes)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
+        if (!/[1-2][09]\d\d-[0-1]\d-[0-3]\d/.test(result)){
+            console.log("ERROR: OriginalAirDate",episodeDate);
+        }
+        return result;
     }
     function compareString(title){
         if (!title){
