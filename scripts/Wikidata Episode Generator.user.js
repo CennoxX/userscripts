@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.5.3
+// @version      0.5.4
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -177,7 +177,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
         if (!title){
             return null;
         }
-        return title.trim().toLowerCase().replace(/\(?(?:part)? ?(\d+?)\)?$/i, "$1").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
+        return title.trim().toLowerCase().replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?(\d+)\)? *$/i,"$1$2").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
     }
     function levenshteinDistance(str1, str2){
         if (!str1 || !str2){
