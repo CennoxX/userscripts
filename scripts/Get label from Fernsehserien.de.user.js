@@ -1,14 +1,13 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.7.0
+// @version      0.7.1
 // @description  Offers Fernsehserien.de labels based on the episode number or title as Wikidata label
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Get%20label%20from%20Fernsehserien.de]%20
 // @match        https://www.wikidata.org/wiki/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=wikidata.org
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=www.wikidata.org
 // @grant        GM.xmlHttpRequest
 // @license      MIT
 // ==/UserScript==
@@ -34,12 +33,12 @@
             return;
         }
         function compareString(title){
-            return title.trim().toLowerCase().replace(/\(?(?:part)? ?(\d+?)\)?$/i, "$1").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
+            return title.trim().toLowerCase().replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?(\d+)\)? *$/i,"$1$2").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
         }
         async function checkTitle(ep, oldTitle, tryByNumber){
             var titles = [...ep.querySelectorAll("div:nth-child(7)>span")].map(i => i.innerText);
-            var german = titles[0].replace(/ \((\d+)\)$/," – Teil $1").replace(/, Teil (\d+)$/," – Teil $1").replace(/ \(Teil (\d+)\)$/," – Teil $1");
-            var english = titles[1];
+            var german = titles[0].replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)? *$/i,"$1 – Teil $2");
+            var english = titles[1].replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:part )?(\d+)\)? *$/i,"$1, part $2");
             var deLabel = null;
 
             var insertElem = '<span class="wikibase-entitytermsview-aliases-alias"> ' +
