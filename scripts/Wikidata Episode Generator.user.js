@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.5.5
+// @version      0.5.6
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -24,7 +24,6 @@
     "use strict";
     GM.registerMenuCommand("convert episode lists for Wikidata",
                            (async()=>{
-        console.clear();
         var article = document.title.split(" – Wikipedia")[0];
         var response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${encodeURIComponent(article)}&rvslots=*&rvprop=content&formatversion=2&format=json`);
         var data = await response.json();
@@ -73,7 +72,7 @@
         var fsId = (jsonObj.claims.hasOwnProperty("P5327"))?jsonObj.claims.P5327[0].mainsnak.datavalue.value:prompt("Fernsehserien.de-Id");
         var originalLanguageId = jsonObj.claims.P364[0].mainsnak.datavalue.value.id;
         var originalCountryId = jsonObj.claims.P495[0].mainsnak.datavalue.value.id;
-        var seasons = jsonObj.claims.P527.sort((a,b) => a.qualifiers.P1545[0].datavalue.value - b.qualifiers.P1545[0].datavalue.value).map(i => i.mainsnak.datavalue.value.id);
+        var seasons = jsonObj.claims.P527?.sort((a,b) => a.qualifiers.P1545[0].datavalue.value - b.qualifiers.P1545[0].datavalue.value).map(i => i.mainsnak.datavalue.value.id)??console.error("season item is missing");
         if (location.href.includes("season")){
             var epSeason = document.title.match(/season (\d+)\)/)[1];
             seasons = jsonObj.claims.P527.filter(i => i.qualifiers.P1545[0].datavalue.value==Number(epSeason)).map(i => i.mainsnak.datavalue.value.id);
@@ -90,12 +89,12 @@
         var episodes = eps.map(i => {
             wikilinks = wikilinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1].split("|")[0]));
             return {
-                "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *\n")??["",(console.log("ERROR: EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
-                "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *\n")??["",(console.log("ERROR: EpisodeNumber\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
-                "OT": (i.match("Title *= *(\.+) *\n")??["",(console.log("ERROR: Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,""),
-                "EA": getDate((i.match("OriginalAirDate *= *(\.+) *\n")??["",(console.log("ERROR: OriginalAirDate\n",i),"")])[1]),
-                "REG": [...new Set([...(i.match("DirectedBy_?1?2? *= *(\.+) *\n")??["",(console.log("ERROR: DirectedBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
-                "DRB": [...new Set([...(i.match("WrittenBy_?1?2? *= *(\.+) *\n")??["",(console.log("ERROR: WrittenBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))]
+                "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *\n")??["",(console.error("EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
+                "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *\n")??i.match("EpisodeNumber *= *(\\d+) *\n")??["",(console.error("EpisodeNumber2\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
+                "OT": (i.match("Title *= *(\.+) *\n")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,""),
+                "EA": getDate((i.match("OriginalAirDate *= *(\.+) *\n")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
+                "REG": [...new Set([...(i.match("DirectedBy_?1?2? *= *(\.+) *\n")??["",(console.error("DirectedBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
+                "DRB": [...new Set([...(i.match("WrittenBy_?1?2? *= *(\.+) *\n")??["",(console.error("WrittenBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))]
             };
         });
         var seasonId = 0;
@@ -169,7 +168,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
     function getDate(episodeDate){
         var result = episodeDate.replace(/{{start date(?:\|df=yes)?\|(\d+)\|(\d+)\|(\d+)(?:\|df=yes)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
         if (!/[1-2][09]\d\d-[0-1]\d-[0-3]\d/.test(result)){
-            console.log("ERROR: OriginalAirDate",episodeDate);
+            console.error("OriginalAirDate",episodeDate);
         }
         return result;
     }
