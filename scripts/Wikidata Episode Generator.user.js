@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.5.6
+// @version      0.5.7
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -24,6 +24,7 @@
     "use strict";
     GM.registerMenuCommand("convert episode lists for Wikidata",
                            (async()=>{
+        console.clear();
         var article = document.title.split(" – Wikipedia")[0];
         var response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${encodeURIComponent(article)}&rvslots=*&rvprop=content&formatversion=2&format=json`);
         var data = await response.json();
@@ -72,19 +73,19 @@
         var fsId = (jsonObj.claims.hasOwnProperty("P5327"))?jsonObj.claims.P5327[0].mainsnak.datavalue.value:prompt("Fernsehserien.de-Id");
         var originalLanguageId = jsonObj.claims.P364[0].mainsnak.datavalue.value.id;
         var originalCountryId = jsonObj.claims.P495[0].mainsnak.datavalue.value.id;
-        var seasons = jsonObj.claims.P527?.sort((a,b) => a.qualifiers.P1545[0].datavalue.value - b.qualifiers.P1545[0].datavalue.value).map(i => i.mainsnak.datavalue.value.id)??console.error("season item is missing");
+        var seasons = jsonObj.claims.P527?.sort((a,b) => a.qualifiers.P1545[0].datavalue.value - b.qualifiers.P1545[0].datavalue.value).map(i => i.mainsnak.datavalue.value.id)??console.error("season items are missing");
         if (location.href.includes("season")){
             var epSeason = document.title.match(/season (\d+)\)/)[1];
             seasons = jsonObj.claims.P527.filter(i => i.qualifiers.P1545[0].datavalue.value==Number(epSeason)).map(i => i.mainsnak.datavalue.value.id);
         }
         var wikilinks = [];
         var eps = articletext.split(/{{Episode list.*\n/).map(i => i.split(/\n}}\n/)[0]).slice(1);
-        for (var doubleEpText of eps.filter(i => i.match(/=.*<hr>.*\n/))){
+        for (var doubleEpText of eps.filter(i => i.match(/=.*<hr ?\/?>.*\n/))){
             var doubleEpIndex = eps.indexOf(doubleEpText);
             doubleEpText = doubleEpText.replace(/(Title *= )\[\[.*\|(.*)\]\]/igm,"$1$2");
             doubleEpText = doubleEpText.replace(/(Title *= )\[\[(.*)\]\]/igm,"$1$2");
-            eps.splice(doubleEpIndex, 0, doubleEpText.replace(/<hr>.*/g,"").replace(/(Title *= *.*)/ig,"$1, part 1"));
-            eps[++doubleEpIndex]=doubleEpText.replace(/=.*<hr>/g,"=").replace(/(Title *= *.*)/ig,"$1, part 2");
+            eps.splice(doubleEpIndex, 0, doubleEpText.replace(/<hr ?\/?>.*/g,"").replace(/(Title *= *.*)/ig,"$1, part 1"));
+            eps[++doubleEpIndex]=doubleEpText.replace(/=.*<hr ?\/?>/g,"=").replace(/(Title *= *.*)/ig,"$1, part 2");
         }
         var episodes = eps.map(i => {
             wikilinks = wikilinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1].split("|")[0]));
@@ -252,7 +253,7 @@ GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
                     epSeason = matchedEp.season + 1;
                 }
                 var matchedEpNr = epSeason + "x" + (matchedEp.NR_ST.length==1?"0":"") + matchedEp.NR_ST;
-                var epNr = ep.seasonNr.value + "x" + (ep.nrSeason.value.length==1?"0":"") + ep.nrSeason.value;
+                var epNr = (ep.seasonNr?.value??"0") + "x" + ((ep.nrSeason?.value.length??1)==1?"0":"") + (ep.nrSeason?.value ?? "0");
                 if (matchedEp.NR_GES != ep.nrAll.value && epNr != matchedEpNr){
                     var message = `Wikipedia: #${matchedEp.NR_GES} / ${matchedEpNr} ${matchedEp.OT}
 Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
@@ -307,7 +308,7 @@ Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
                 if (matchedEp.Lde != "–"){
                     if (ep.NR_GES != matchedEp.nr && epNr != matchedEp.epNr){
                         var message = `Wikipedia: #${ep.NR_GES} / ${epNr} ${ot}
-Fernsehserien.de: #${matchedEp.nr} / ${matchedEp.epNr} ${matchedEp.Len}`
+Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
                         if (confirm("fuzzy match?\n" + message)){
                             ep.DT = matchedEp.Lde;
                             message = "matched:\n" + message;
