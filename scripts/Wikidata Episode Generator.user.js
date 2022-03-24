@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.5.7
+// @version      0.6.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -95,14 +95,15 @@
                 "OT": (i.match("Title *= *(\.+) *\n")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,""),
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *\n")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...(i.match("DirectedBy_?1?2? *= *(\.+) *\n")??["",(console.error("DirectedBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
-                "DRB": [...new Set([...(i.match("WrittenBy_?1?2? *= *(\.+) *\n")??["",(console.error("WrittenBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))]
+                "DRB": [...new Set([...(i.match("WrittenBy_?1?2? *= *(\.+) *\n")??["",(console.error("WrittenBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
+                "PROD": (i.match("ProdCode *= *(.*) *\n")??["",""])[1]
             };
         });
         var seasonId = 0;
         var episodeId = 0;
         var wikipediaLink = location.href.split("#")[0];
         var output = "";
-
+        var lastEA = "";
         episodes.forEach(i => {
             if (Number(i.NR_ST)<episodeId){
                 seasonId++;
@@ -112,30 +113,75 @@
         });
 
         await GetEpisodeItems(seriesId, episodes);
-        if (fsId){
-            await GetFSLabels(fsId, episodes);
-        }
-        if (imdbId){
-            await GetIMDbIds(imdbId, episodes);
-        }
-        await GetWikipediaLinks(episodes);
-
-        //write CREATE-Statements, get DRB and REG
-        episodes.forEach(ep => {
-            if (ep.OT.match(/\[\[.*\]\]/) != null){
-                ep.OT = ep.OT.match(/\[\[(.*)\]\]/)[1];
-                ep.OT = ep.OT.replace(/.*\|/,"");
+        if (!seasons){
+            var quickstatements = await GetSeasonItems(seriesId);
+            if (quickstatements != ""){
+                //write Statements for adding seasons to series
+                console.warn("Please rerun Wikidata Episode Generator after running these QuickStatements.");
+                output += quickstatements;
+            }else{
+                //write CREATE-Statements for seasons
+                console.warn("Please wait some time after running these QuickStatements and then rerun Wikidata Episode Generator.");
+                episodeId = 0;
+                episodes.forEach(ep => {
+                    //new season, first episode
+                    if (Number(ep.NR_ST) < episodeId){
+                        output +=`LAST	P582	+${lastEA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P1113	${episodeId}	S143	Q328	S4656	"${wikipediaLink}"
+`;
+                    }
+                    //new season
+                    if (ep.NR_GES == 1 || Number(ep.NR_ST) < episodeId){
+                        output += `CREATE
+LAST	Len	"${seriesEn}, season ${ep.season+1}"
+LAST	Lde	"${series}/Staffel ${ep.season+1}"
+LAST	Den	"season of ${seriesEn}"
+LAST	Dde	"Staffel von ${series}"
+LAST	P31	Q3464665	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P179	${seriesId}	P1545	"${ep.season+1}"	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P364	${originalLanguageId}	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P495	${originalCountryId}	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P449	${networkId}	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P580	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
+`;
+                    }
+                    //last episode
+                    if (ep.NR_GES == episodes.length){
+                        output +=`LAST	P582	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
+LAST	P1113	${ep.NR_ST}	S143	Q328	S4656	"${wikipediaLink}"
+`;
+                    }
+                    lastEA = ep.EA
+                    ep.season = seasonId;
+                    episodeId = ep.NR_ST;
+                })
             }
-            ep.OT = ep.OT.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:part )?(\d+)\)?/i,"$1, part $2");
-            var epText = `CREATE
+        }
+        else
+        {
+            if (fsId){
+                await GetFSLabels(fsId, episodes);
+            }
+            if (imdbId){
+                await GetIMDbIds(imdbId, episodes);
+            }
+            await GetWikipediaLinks(episodes);
+            //write CREATE-Statements for episodes, get DRB and REG
+            episodes.forEach(ep => {
+                if (ep.OT.match(/\[\[.*\]\]/) != null){
+                    ep.OT = ep.OT.match(/\[\[(.*)\]\]/)[1];
+                    ep.OT = ep.OT.replace(/.*\|/,"");
+                }
+                ep.OT = ep.OT.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:part )?(\d+)\)?/i,"$1, part $2");
+                var epText = `CREATE
 LAST	Len	"${ep.OT}"
 `;
-            if (ep.hasOwnProperty("DT")){
-                ep.DT = ep.DT.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2");
-                epText += `LAST	Lde	"${ep.DT}"
+                if (ep.hasOwnProperty("DT")){
+                    ep.DT = ep.DT.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2");
+                    epText += `LAST	Lde	"${ep.DT}"
 `;
-            }
-            epText +=`LAST	Den	"episode of ${seriesEn}"
+                }
+                epText +=`LAST	Den	"episode of ${seriesEn}"
 LAST	Dde	"Folge von ${series}"
 LAST	Dnl	"aflevering van ${seriesNl}"
 LAST	P1476	en:"${ep.OT}"	S143	Q328	S4656	"${wikipediaLink}"
@@ -147,22 +193,27 @@ LAST	P364	${originalLanguageId}	S143	Q328	S4656	"${wikipediaLink}"
 LAST	P495	${originalCountryId}	S143	Q328	S4656	"${wikipediaLink}"
 LAST	P577	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
 `;
-            if (ep.hasOwnProperty("imdb")){
-                epText += `LAST	P345	"${ep.imdb}"
+                if (ep.PROD != ""){
+                    epText += `LAST	P2364	"${ep.PROD}"	S143	Q328	S4656	"${wikipediaLink}"
 `;
-            }
-            ep.REGid.forEach(reg => {
-                epText += `LAST	P57	${reg}	S143	Q328	S4656	"${wikipediaLink}"
+                }
+                if (ep.hasOwnProperty("imdb")){
+                    epText += `LAST	P345	"${ep.imdb}"
+`;
+                }
+                ep.REGid.forEach(reg => {
+                    epText += `LAST	P57	${reg}	S143	Q328	S4656	"${wikipediaLink}"
 `;});
-            ep.DRBid.forEach(drb => {
-                epText += `LAST	P58	${drb}	S143	Q328	S4656	"${wikipediaLink}"
+                ep.DRBid.forEach(drb => {
+                    epText += `LAST	P58	${drb}	S143	Q328	S4656	"${wikipediaLink}"
 `;});
-            if (ep.hasOwnProperty("OTid")){
-                epText = epText.replace(/LAST\sDen.*\nLAST\sDde.*\nLAST\sDnl.*\n/,"");
-                epText = epText.replace(/(CREATE\n)?LAST/g,ep.OTid);
-            }
-            output += epText;
-        });
+                if (ep.hasOwnProperty("OTid")){
+                    epText = epText.replace(/LAST\sDen.*\nLAST\sDde.*\nLAST\sDnl.*\n/,"");
+                    epText = epText.replace(/(CREATE\n)?LAST/g,ep.OTid);
+                }
+                output += epText;
+            });
+        }
         console.log(output);
         GM.setClipboard(output);
     }),"w");
@@ -269,6 +320,30 @@ Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
                 }
             }
         };
+    }
+    async function GetSeasonItems(qid){
+        console.log("loading season items from Wikidata…");
+        var request = `SELECT ?quickstatements WHERE {
+  BIND(wd:${qid} AS ?series)
+  ?qid wdt:P31 wd:Q3464665;
+    p:P179 _:s.
+  _:s ps:P179 ?series;
+    pq:P1545 ?number.
+  BIND(CONCAT(REPLACE(STR(?series), ".*/", ""), "	P527	", REPLACE(STR(?qid), ".*/", ""), "	P1545	\\"", ?number, "\\"") AS ?quickstatements)
+}
+ORDER BY (xsd:integer(?number))`;
+        var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
+            "headers": {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Accept": "application/sparql-results+json"
+            },
+            "body": "query=" + encodeURIComponent(request).replaceAll("%20","+").replaceAll("%5Cd","%5C%5Cd"),
+            "method": "POST",
+            "mode": "cors"
+        });
+        var obj = await resp.json();
+        var sparqlSeasons = obj.results.bindings;
+        return sparqlSeasons.map(i => i.quickstatements.value).join("\n");
     }
     async function GetFSLabels(fsId, episodes){
         console.log("loading German labels from Fernsehserien.de…");
