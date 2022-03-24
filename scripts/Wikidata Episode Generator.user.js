@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.6.0
+// @version      0.6.1
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -218,7 +218,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	Q30	S143	Q328	S4656	"${wikipediaLink}"
         GM.setClipboard(output);
     }),"w");
     function getDate(episodeDate){
-        var result = episodeDate.replace(/{{start date(?:\|df=yes)?\|(\d+)\|(\d+)\|(\d+)(?:\|df=yes)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
+        var result = episodeDate.replace(/{{start date(?:\|df=y(?:es)?)?\|(\d+)\|(\d+)\|(\d+)(?:\|df=y(?:es)?)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
         if (!/[1-2][09]\d\d-[0-1]\d-[0-3]\d/.test(result)){
             console.error("OriginalAirDate",episodeDate);
         }
