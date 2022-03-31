@@ -102,7 +102,7 @@
         var seasonId = 0;
         var episodeId = 0;
         var articleName = location.pathname.replace(/^\/wiki\//,"");
-        var source = `S143	Q328	S4656	"https://en.wikipedia.org/w/index.php?title=${articleName}&oldid=${version.revid}"	S813	+${new Date().toISOString().slice(0,10)}T00:00:00Z/11`;
+        var source = `S143	Q328	S4656	"https://en.wikipedia.org/w/index.php?title=${articleName}&oldid=${version.revid}"`;
         var output = "";
         var lastEA = "";
         episodes.forEach(i => {
@@ -308,7 +308,7 @@ GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
                 var epNr = (ep.seasonNr?.value??"0") + "x" + ((ep.nrSeason?.value.length??1)==1?"0":"") + (ep.nrSeason?.value ?? "0");
                 if (matchedEp.NR_GES != ep.nrAll.value && epNr != matchedEpNr){
                     var message = `Wikipedia: #${matchedEp.NR_GES} / ${matchedEpNr} ${matchedEp.OT}
-Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
+Wikidata-ID from Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
                     if (confirm("fuzzy match?\n" + message)){
                         matchedEp.OTid = ep.qid.value;
                         message = "matched:\n" + message;
@@ -347,11 +347,12 @@ ORDER BY (xsd:integer(?number))`;
         return sparqlSeasons.map(i => i.quickstatements.value).join("\n");
     }
     async function GetFSLabels(fsId, episodes){
-        console.log("loading German labels from Fernsehserien.de…");
+        var url = `https://www.fernsehserien.de/${fsId}/episodenguide`;
+        console.log(`loading German labels from Fernsehserien.de… (${url})`);
         var fsLabels = [];
         var response = await GM.xmlHttpRequest({
             method: "GET",
-            url: `https://www.fernsehserien.de/${fsId}/episodenguide`,
+            url: url,
             onload: function(response) {
                 return response;
             }
@@ -384,7 +385,7 @@ ORDER BY (xsd:integer(?number))`;
                 if (matchedEp.Lde != "–"){
                     if (ep.NR_GES != matchedEp.nr && epNr != matchedEp.epNr){
                         var message = `Wikipedia: #${ep.NR_GES} / ${epNr} ${ot}
-Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
+label from Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
                         if (confirm("fuzzy match?\n" + message)){
                             ep.DT = matchedEp.Lde;
                             message = "matched:\n" + message;
@@ -400,14 +401,15 @@ Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
         };
     };
     async function GetIMDbIds(imdbId, episodes){
-        console.log("loading IDs from IMDb…");
+        var url = `https://www.imdb.com/search/title/?series=${imdbId}&view=simple&sort=release_date,asc&count=250`;
+        console.log(`loading IDs from IMDb… (${url})`);
         var imdbIds = [];
         var startEp = 1;
         var allEps = 0;
         do{
             var response = await GM.xmlHttpRequest({
                 method: "GET",
-                url: `https://www.imdb.com/search/title/?series=${imdbId}&view=simple&sort=release_date,asc&count=250&start=${startEp}`,
+                url: `${url}&start=${startEp}`,
                 onload: function(response) {
                     return response;
                 }
@@ -442,7 +444,7 @@ Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
                         epSeason = ep.season + 1;
                     }
                     var message = `Wikipedia: #${ep.NR_GES} / ${epSeason}x${(ep.NR_ST.length==1?"0":"")}${ep.NR_ST} ${ot}
-IMDb: #${matchedEp.nr} ${matchedEp.title}`;
+IMDb-ID from IMDb: #${matchedEp.nr} ${matchedEp.title}`;
                     if (confirm("fuzzy match?\n"+message)){
                         ep.imdb = matchedEp.id;
                         message = "matched:\n" + message;
