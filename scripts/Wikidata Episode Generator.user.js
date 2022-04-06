@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.6.2
+// @version      0.6.3
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -138,7 +138,7 @@ LAST	Len	"${seriesEn}, season ${ep.season+1}"
 LAST	Lde	"${series}/Staffel ${ep.season+1}"
 LAST	Den	"season of ${seriesEn}"
 LAST	Dde	"Staffel von ${series}"
-LAST	P31	Q3464665	${source}
+LAST	P31	Q3464665
 LAST	P179	${seriesId}	P1545	"${ep.season+1}"	${source}
 LAST	P364	${originalLanguageId}	${source}
 LAST	P495	${originalCountryId}	${source}
@@ -216,6 +216,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
             });
         }
         console.log(output);
+        console.warn("Please check all QuickStatements for correctness before execution at https://quickstatements.toolforge.org/#/batch.");
         GM.setClipboard(output);
     }),"w");
     function getDate(episodeDate){
