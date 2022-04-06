@@ -186,7 +186,7 @@ LAST	Len	"${ep.OT}"
 LAST	Dde	"Folge von ${series}"
 LAST	Dnl	"aflevering van ${seriesNl}"
 LAST	P1476	en:"${ep.OT}"	${source}
-LAST	P31	Q21191270	${source}
+LAST	P31	Q21191270
 LAST	P179	${seriesId}	P1545	"${ep.NR_GES}"	${source}
 LAST	P4908	${seasons[ep.season]}	P1545	"${ep.NR_ST}"	${source}
 LAST	P449	${networkId}	${source}
