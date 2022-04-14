@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.6.3
+// @version      0.7.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -161,7 +161,7 @@ LAST	P1113	${ep.NR_ST}	${source}
         else
         {
             if (fsId){
-                await GetFSLabels(fsId, episodes);
+                await GetFSData(fsId, episodes);
             }
             if (imdbId){
                 await GetIMDbIds(imdbId, episodes);
@@ -194,6 +194,12 @@ LAST	P364	${originalLanguageId}	${source}
 LAST	P495	${originalCountryId}	${source}
 LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
 `;
+                if (ep.hasOwnProperty("EAD") && ep.EAD != ""){
+                    ep.EAD = ep.EAD.replace(/(\d{2})\.(\d{2})\.(\d{4})/,"$3-$2-$1");
+                    var fsSource = `S248	Q54871129	S5327	"${fsId}"	S813	+${new Date().toISOString().slice(0,10)}T00:00:00Z/11`;
+                    epText += `LAST	P577	+${ep.EAD}T00:00:00Z/11	P291	Q183	${fsSource}
+`;
+                }
                 if (ep.PROD != ""){
                     epText += `LAST	P2364	"${ep.PROD}"	${source}
 `;
@@ -347,10 +353,10 @@ ORDER BY (xsd:integer(?number))`;
         var sparqlSeasons = obj.results.bindings;
         return sparqlSeasons.map(i => i.quickstatements.value).join("\n");
     }
-    async function GetFSLabels(fsId, episodes){
+    async function GetFSData(fsId, episodes){
         var url = `https://www.fernsehserien.de/${fsId}/episodenguide`;
-        console.log(`loading German labels from Fernsehserien.de… (${url})`);
-        var fsLabels = [];
+        console.log(`loading German labels and dates from Fernsehserien.de… (${url})`);
+        var fsDatas = [];
         var response = await GM.xmlHttpRequest({
             method: "GET",
             url: url,
@@ -360,20 +366,22 @@ ORDER BY (xsd:integer(?number))`;
         });
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(response.responseText,"text/html");
-        fsLabels = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText, "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText, "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x")}});
+        fsDatas = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText, "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText, "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x"), "ead": a.querySelector("div:nth-child(8)").childNodes[0].data.trim()}});
         for (var ep of episodes){
             let ot = ep.OT;
             if (ot.match(/\[\[.*\]\]/) != null){
                 ot = ot.match(/\[\[(.*)\]\]/)[1];
                 ot = ot.replace(/.*\|/,"");
             }
-            var fsLabel = fsLabels.filter(id => compareString(id.Len) == compareString(ot));
-            if (fsLabel.length == 1){
-                if (fsLabel[0].Lde != "–"){
-                    ep.DT = fsLabel[0].Lde;
+            var fsData = fsDatas.filter(id => compareString(id.Len) == compareString(ot));
+            if (fsData.length == 1){
+                if (fsData[0].Lde != "–"){
+                    ep.DT = fsData[0].Lde;
+                    if (fsData[0].ead != "")
+                        ep.EAD = fsData[0].ead;
                 }
             }else{
-                var matchedEp = fsLabels.reduce(function(prev, curr) {
+                var matchedEp = fsDatas.reduce(function(prev, curr) {
                     return levenshteinDistance(compareString(prev.Len), compareString(ot)) < levenshteinDistance(compareString(curr.Len), compareString(ot)) ? prev : curr;
                 });
                 var epSeason;
@@ -386,9 +394,11 @@ ORDER BY (xsd:integer(?number))`;
                 if (matchedEp.Lde != "–"){
                     if (ep.NR_GES != matchedEp.nr && epNr != matchedEp.epNr){
                         var message = `Wikipedia: #${ep.NR_GES} / ${epNr} ${ot}
-label from Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
+data from Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matchedEp.Len}`
                         if (confirm("fuzzy match?\n" + message)){
                             ep.DT = matchedEp.Lde;
+                            if (matchedEp.ead != "")
+                                ep.EAD = matchedEp.ead;
                             message = "matched:\n" + message;
                         }else{
                             message = "not matched:\n" + message;
