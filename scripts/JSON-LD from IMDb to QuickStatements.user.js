@@ -1,13 +1,10 @@
 // ==UserScript==
 // @name         JSON-LD from IMDb to QuickStatements
-// @version      0.8.3
+// @version      0.8.4
 // @description  Gets data from JSON-LD from IMDb to QuickStatements, to publish it on Wikidata
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
-// @downloadURL  https://greasyfork.org/scripts/377488-json-ld-from-imdb-to-quickstatements/code/JSON-LD%20from%20IMDb%20to%20QuickStatements.user.js
-// @updateURL    https://greasyfork.org/scripts/377488-json-ld-from-imdb-to-quickstatements/code/JSON-LD%20from%20IMDb%20to%20QuickStatements.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[JSON-LD%20from%20IMDb%20to%20QuickStatements]%20
 // @match        https://www.imdb.com/*
 // @match        https://quickstatements.toolforge.org/*
@@ -18,6 +15,9 @@
 // @grant        GM_setValue
 // @license      MIT
 // ==/UserScript==
+/* jshint esversion: 10 */
+/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
+/* eslint curly: 'off' */
 
 (function() {
     'use strict';

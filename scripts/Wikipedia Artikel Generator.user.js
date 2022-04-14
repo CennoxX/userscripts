@@ -1,9 +1,8 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.4
+// @version      1.3.5
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Wikipedia%20Artikel%20Generator]%20
@@ -17,7 +16,7 @@
 // @grant        unsafeWindow
 // @license      MIT
 // ==/UserScript==
-/* jshint esversion: 8 */
+/* jshint esversion: 10 */
 /* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
 /* eslint curly: "off" */
 /* globals jQuery, $, mw */

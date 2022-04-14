@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.7.1
+// @version      0.7.2
 // @description  Offers Fernsehserien.de labels based on the episode number or title as Wikidata label
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -11,7 +11,7 @@
 // @grant        GM.xmlHttpRequest
 // @license      MIT
 // ==/UserScript==
-/* jshint esversion: 8 */
+/* jshint esversion: 10 */
 /* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
 /* eslint curly: "off" */
 /* globals jQuery, $, mw */

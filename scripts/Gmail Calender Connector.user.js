@@ -1,18 +1,18 @@
 // ==UserScript==
 // @name         Gmail Calender Connector
-// @version      1.0.2
+// @version      1.0.3
 // @description  Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
-// @downloadURL  https://greasyfork.org/scripts/33508-gmail-calender-connector/code/Gmail%20Calender%20Connector.user.js
-// @updateURL    https://greasyfork.org/scripts/33508-gmail-calender-connector/code/Gmail%20Calender%20Connector.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Gmail%20Calender%20Connector]%20
 // @include      https://calendar.google.com/calendar/*/eventedit?dates*
 // @grant        none
 // @license      MIT
 // ==/UserScript==
+/* jshint esversion: 10 */
+/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
+/* eslint curly: 'off' */
 
 var now = new Date();
 var link = location.search;

@@ -1,13 +1,10 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      2.2.5
+// @version      2.2.6
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
-// @downloadURL  https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/code/Filmografie%20von%20IMDb%20nach%20Wikipedia.user.js
-// @updateURL    https://greasyfork.org/scripts/373171-filmografie-von-imdb-nach-wikipedia/code/Filmografie%20von%20IMDb%20nach%20Wikipedia.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Filmografie%20von%20IMDb%20nach%20Wikipedia]%20
 // @connect      www.wikidata.org
 // @connect      www.imdb.com
@@ -21,8 +18,9 @@
 // @license      MIT
 // @noframes
 // ==/UserScript==
-/* jshint esversion: 8 */
+/* jshint esversion: 10 */
 /* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
+/* eslint curly: 'off' */
 
 (function(){
     'use strict';

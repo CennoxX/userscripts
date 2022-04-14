@@ -1,21 +1,19 @@
 // ==UserScript==
 // @name         Spotify hotkeys
-// @version      1.8.1
+// @version      1.8.2
 // @description  Allows hotkeys and media keys to control the Spotify web player from any tab
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
-// @downloadURL  https://greasyfork.org/scripts/31978-spotify-hotkeys/code/Spotify%20hotkeys.user.js
-// @updateURL    https://greasyfork.org/scripts/31978-spotify-hotkeys/code/Spotify%20hotkeys.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Spotify%20hotkeys]%20
-// @include      *
+// @match        *
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=spotify.com
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @license      MIT
 // ==/UserScript==
-/* jshint esversion: 8 */
+/* jshint esversion: 10 */
+/* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
 /* eslint curly: "off" */
 
 const playpauseButton = "[data-testid=control-button-playpause]";

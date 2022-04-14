@@ -1,19 +1,19 @@
 // ==UserScript==
 // @name         Google Tasks Desktop
-// @version      0.2.2
+// @version      0.2.3
 // @description  Changes the appearance of fullscreen-for-googletasks.com to resemble tasks.google.com
 // @author       CennoxX
-// @contact      cesar.bernard@gmx.de
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
-// @downloadURL  https://greasyfork.org/scripts/429123-google-tasks-desktop/code/Google%20Tasks%20Desktop.user.js
-// @updateURL    https://greasyfork.org/scripts/429123-google-tasks-desktop/code/Google%20Tasks%20Desktop.meta.js
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Google%20Tasks%20Desktop]%20
 // @match        https://fullscreen-for-googletasks.com/
 // @icon         https://ssl.gstatic.com//tasks/f5cfbf604fef12b05341c945d745fff2/favicon.ico
 // @grant        GM.addStyle
 // @license      MIT
 // ==/UserScript==
+/* jshint esversion: 10 */
+/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
+/* eslint curly: 'off' */
 
 (function() {
     'use strict';
