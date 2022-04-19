@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.7.0
+// @version      0.8.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -79,6 +79,7 @@
             seasons = jsonObj.claims.P527.filter(i => i.qualifiers.P1545[0].datavalue.value==Number(epSeason)).map(i => i.mainsnak.datavalue.value.id);
         }
         var wikilinks = [];
+        var plainlinks = [];
         var eps = articletext.split(/{{(?:#invoke:)?Episode list.*\n/).map(i => i.split(/\n}}\n/)[0]).slice(1);
         for (var doubleEpText of eps.filter(i => i.match(/=.*<hr ?\/?>.*\n/))){
             var doubleEpIndex = eps.indexOf(doubleEpText);
@@ -88,14 +89,17 @@
             eps[++doubleEpIndex]=doubleEpText.replace(/=.*<hr ?\/?>/g,"=").replace(/(Title *= *.*)/ig,"$1, part 2");
         }
         var episodes = eps.map(i => {
-            wikilinks = wikilinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1].split("|")[0]));
+            wikilinks = wikilinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1]));
+            plainlinks = plainlinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1].split("|")[1]??i[1]));
+            if (i.match("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)") == null){console.error("DirectedBy\n",i);}
+            if (i.match("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)") == null){console.error("WrittenBy\n",i);}
             return {
                 "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
                 "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *(?:\n|\|)")??i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber2\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
                 "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,""),
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
-                "REG": [...new Set([...(i.match("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)")??["",(console.error("DirectedBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
-                "DRB": [...new Set([...(i.match("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)")??["",(console.error("WrittenBy\n",i),"")])[1].matchAll(new RegExp(wikilinks.join("|"),"g"))].map(i => i[0]).filter(i => i != ""))],
+                "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
+                "DRB": [...new Set([...[...(i.matchAll("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
                 "PROD": (i.match("ProdCode *= *(.*) *(?:\n|\|)")??["",""])[1]
             };
         });
