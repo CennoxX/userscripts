@@ -6,7 +6,7 @@
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[closeDoublePage]%20
-// @match        *
+// @match        *://*/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        window.close

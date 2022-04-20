@@ -6,7 +6,7 @@
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Spotify%20hotkeys]%20
-// @match        *
+// @match        *://*/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=spotify.com
 // @grant        GM_getValue
 // @grant        GM_setValue
