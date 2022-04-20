@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Spotify hotkeys
-// @version      1.8.2
+// @version      1.8.3
 // @description  Allows hotkeys and media keys to control the Spotify web player from any tab
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
