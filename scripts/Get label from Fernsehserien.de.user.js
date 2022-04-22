@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.7.2
+// @version      0.7.3
 // @description  Offers Fernsehserien.de labels based on the episode number or title as Wikidata label
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -33,7 +33,7 @@
             return;
         }
         function compareString(title){
-            return title.trim().toLowerCase().replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?(\d+)\)? *$/i,"$1$2").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
+            return title.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?(\d+)\)? *$/i,"$1$2").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
         }
         async function checkTitle(ep, oldTitle, tryByNumber){
             var titles = [...ep.querySelectorAll("div:nth-child(7)>span")].map(i => i.innerText);
