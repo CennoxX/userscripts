@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.8.1
+// @version      0.8.2
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -18,6 +18,7 @@
 // ==/UserScript==
 /* jshint esversion: 10 */
 /* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
+/* eslint no-return-assign: "off" */
 /* eslint curly: "off" */
 
 (function() {
@@ -74,7 +75,7 @@
         var originalLanguageId = jsonObj.claims.P364[0].mainsnak.datavalue.value.id;
         var originalCountryId = jsonObj.claims.P495[0].mainsnak.datavalue.value.id;
         var seasons = jsonObj.claims.P527?.sort((a,b) => a.qualifiers.P1545[0].datavalue.value - b.qualifiers.P1545[0].datavalue.value).map(i => i.mainsnak.datavalue.value.id)??console.error("season items are missing");
-        if (location.href.includes("season")){
+        if (location.pathname.includes("season")){
             var epSeason = document.title.match(/season (\d+)\)/)[1];
             seasons = jsonObj.claims.P527.filter(i => i.qualifiers.P1545[0].datavalue.value==Number(epSeason)).map(i => i.mainsnak.datavalue.value.id);
         }
@@ -96,7 +97,7 @@
             return {
                 "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
                 "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *(?:\n|\|)")??i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber2\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
-                "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,""),
+                "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,"").split(/\[\[.*\||\[\[|\]\]/g).join("").trim().replace(/^(.*?)(?=[^\dXVI]{2}.) ?[,:\-–]? \(?(?:part )?([\dXVI]+)\)?/i,"$1, part $2"),
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
                 "DRB": [...new Set([...[...(i.matchAll("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
@@ -173,16 +174,10 @@ LAST	P1113	${ep.NR_ST}	${source}
             await GetWikipediaLinks(episodes);
             //write CREATE-Statements for episodes, get DRB and REG
             episodes.forEach(ep => {
-                if (ep.OT.match(/\[\[.*\]\]/) != null){
-                    ep.OT = ep.OT.match(/\[\[(.*)\]\]/)[1];
-                    ep.OT = ep.OT.replace(/.*\|/,"");
-                }
-                ep.OT = ep.OT.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:part )?(\d+)\)?/i,"$1, part $2");
                 var epText = `CREATE
 LAST	Len	"${ep.OT}"
 `;
                 if (ep.hasOwnProperty("DT")){
-                    ep.DT = ep.DT.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2");
                     epText += `LAST	Lde	"${ep.DT}"
 `;
                 }
@@ -237,10 +232,15 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
         return result;
     }
     function compareString(title){
-        if (!title){
+        if (!title)
             return null;
-        }
-        return title.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?(\d+)\)? *$/i,"$1$2").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
+        var partEp = title.match(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?#?([\dXVI]+)\)? *$/i);
+        if (partEp)
+            title = partEp[1] + (Number(partEp[2]) ? getRomanNumber(partEp[2]) : partEp[2]);
+        return title.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
+    }
+    function getRomanNumber(n){
+        return n = Number(n) && "x10ix9v5iv4i1".replace(/(\D+)(\d+)/g,(_,r,d)=>r.repeat(n/d,n%=d));
     }
     function levenshteinDistance(str1, str2){
         if (!str1 || !str2){
@@ -302,7 +302,7 @@ GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
         var obj = await resp.json();
         var sparqlEps = obj.results.bindings;
         for (let ep of sparqlEps){
-            var sparqlEp = episodes.filter(e => compareString(e.OT.split(/\[\[.*\||\[\[|\]\]/g).filter(n => n)[0]) == compareString(ep.OT.value));
+            var sparqlEp = episodes.filter(e => compareString(e.OT) == compareString(ep.OT.value));
             if (sparqlEp.length == 1){
                 sparqlEp[0].OTid = ep.qid.value;
             }else{
@@ -310,7 +310,7 @@ GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
                     return levenshteinDistance(compareString(prev.OT), compareString(ep.OT.value)) < levenshteinDistance(compareString(curr.OT), compareString(ep.OT.value)) ? prev : curr;
                 });
                 var epSeason;
-                if (location.href.includes("season")){
+                if (location.pathname.includes("season")){
                     epSeason = document.title.match(/season (\d+)\)/)[1];
                 }else{
                     epSeason = matchedEp.season + 1;
@@ -370,13 +370,9 @@ ORDER BY (xsd:integer(?number))`;
         });
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(response.responseText,"text/html");
-        fsDatas = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText, "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText, "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x"), "ead": a.querySelector("div:nth-child(8)").childNodes[0].data.trim()}});
+        fsDatas = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2"), "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText, "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x"), "ead": a.querySelector("div:nth-child(8)").childNodes[0]?.data?.trim()}});
         for (var ep of episodes){
             let ot = ep.OT;
-            if (ot.match(/\[\[.*\]\]/) != null){
-                ot = ot.match(/\[\[(.*)\]\]/)[1];
-                ot = ot.replace(/.*\|/,"");
-            }
             var fsData = fsDatas.filter(id => compareString(id.Len) == compareString(ot));
             if (fsData.length == 1){
                 if (fsData[0].Lde != "–"){
@@ -435,25 +431,20 @@ data from Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matched
             allEps = xmlDoc.querySelector(".desc>span").innerText.split(" ")[2];
             startEp = startEp + 250;
         } while (imdbIds.length < allEps);
-
         for (var ep of episodes){
             let ot = ep.OT;
-            if (ot.match(/\[\[.*\]\]/) != null){
-                ot = ot.match(/\[\[(.*)\]\]/)[1];
-                ot = ot.replace(/.*\|/,"");
-            }
             let imdbId = imdbIds.filter(id => compareString(id.title) == compareString(ot));
             if (imdbId.length == 1){
                 ep.imdb = imdbId[0].id;
             }else{
                 var matchedEp = imdbIds.reduce(function(prev, curr) {
-                    return levenshteinDistance(compareString(prev.title), compareString(ot)) < levenshteinDistance(compareString(curr.title), compareString(ot)) ? prev : curr;
+                    return levenshteinDistance(compareString(prev.title), compareString(ot)) <= levenshteinDistance(compareString(curr.title), compareString(ot)) ? prev : curr;
                 });
                 if (ep.NR_GES == matchedEp.nr){
                     ep.imdb = matchedEp.id;
                 }else{
                     var epSeason;
-                    if (location.href.includes("season")){
+                    if (location.pathname.includes("season")){
                         epSeason = document.title.match(/season (\d+)\)/)[1];
                     }else{
                         epSeason = ep.season + 1;
