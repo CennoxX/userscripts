@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         JSON-LD from IMDb to QuickStatements
-// @version      0.8.4
+// @version      0.9.0
 // @description  Gets data from JSON-LD from IMDb to QuickStatements, to publish it on Wikidata
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -26,6 +26,8 @@
     //
     if (location.href == 'https://quickstatements.toolforge.org/#/batch') {
         var quickstatements = '';
+        var evt = document.createEvent('HTMLEvents');
+        evt.initEvent('input', false, true);
         GM_setValue('quickstatements','');
         var checkForChanges = setInterval(function() {
             if (quickstatements) {
@@ -34,15 +36,17 @@
                     quickForm.innerHTML += quickstatements;
                 }
                 GM_setValue('quickstatements','');
+                quickForm.dispatchEvent(evt);
                 quickstatements = '';
             }else{
                 quickstatements = GM_getValue('quickstatements');
             }
         }, 250);
-        //
-        //IMDb
-        //
-    }else if (location.host == "www.imdb.com"){
+    }
+    //
+    //IMDb
+    //
+    else if (location.host == 'www.imdb.com'){
         var request = 0;
         var done = 0;
         var i = 0;
@@ -101,9 +105,9 @@
         function getDuration(time) {
             if (time) {
                 var regex = /PT(?:(\d+)H)?(?:(\d+)M)?/;
-                var hours = parseInt(time.replace(regex, "$1"));
+                var hours = parseInt(time.replace(regex, '$1'));
                 hours = isNaN(hours)?0:hours;
-                var minutes = parseInt(time.replace(regex, "$2"));
+                var minutes = parseInt(time.replace(regex, '$2'));
                 minutes = isNaN(minutes)?0:minutes;
                 minutes = minutes+60*hours;
                 pushQSString('P2047', minutes +'U7727');
@@ -126,8 +130,8 @@
         function getWikidataId(id,prop) {
             request++;
             GM.xmlHttpRequest({
-                method: "GET",
-                url: "https://www.wikidata.org/w/api.php?action=query&format=json&list=search&srsearch=haswbstatement:P345=" + id.url.split('/')[2] + "&type=" + prop,
+                method: 'GET',
+                url: 'https://www.wikidata.org/w/api.php?action=query&format=json&list=search&srsearch=haswbstatement:P345=' + id.url.split('/')[2] + '&type=' + prop,
                 onload: function(response) {
                     done++;
                     if (response.responseText.length > 0) {
@@ -135,7 +139,7 @@
                         if (jsonObj.query.search[0] != null) {
                             var qid = jsonObj.query.search[0].title;
                             var property = response.finalUrl.split('type=')[1].split('&')[0];
-                            if (property == "item"){
+                            if (property == 'item'){
                                 item = qid;
                             } else {
                                 pushQSString(property,qid);
@@ -145,7 +149,7 @@
                 },
                 onerror: function(response) {
                     done++;
-                    console.log("Error in fetching contents: " + response.responseText);
+                    console.log('Error in fetching contents: ' + response.responseText);
                 }
 
             });
