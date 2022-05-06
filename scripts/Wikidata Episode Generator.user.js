@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.8.2
+// @version      0.9.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -81,7 +81,19 @@
         }
         var wikilinks = [];
         var plainlinks = [];
-        var eps = articletext.split(/{{(?:#invoke:)?Episode list.*\n/).map(i => i.split(/\n}}\n/)[0]).slice(1);
+        var eps = articletext.split(/{{(?:#invoke:)?Episode list.*\n|==+ *Season (\d+) /i).filter(i => i).map(i => i.split(/\n}}\n/)[0]).slice(1);
+        if (articletext.match(/== *Season \d+ /i)){
+            var tempSeason = 0;
+            eps.forEach((e,i) => {
+                if (Number(e)){
+                    tempSeason = e;
+                    eps.splice(i+1,1);
+                }else{
+                    eps[i]+="\n |Season = "+tempSeason;
+                }
+            });
+            eps = eps.filter(i => !Number(i));
+        }
         for (var doubleEpText of eps.filter(i => i.match(/=.*<hr ?\/?>.*\n/))){
             var doubleEpIndex = eps.indexOf(doubleEpText);
             doubleEpText = doubleEpText.replace(/(Title *= )\[\[.*\|(.*)\]\]/igm,"$1$2");
@@ -101,7 +113,8 @@
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
                 "DRB": [...new Set([...[...(i.matchAll("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
-                "PROD": (i.match("ProdCode *= *(.*) *(?:\n|\|)")??["",""])[1]
+                "PROD": (i.match("ProdCode *= *(.*) *(?:\n|\|)")??["",""])[1],
+                "ST": (i.match(/Season *= *(\d+) *$/)??["",""])[1],
             };
         });
         var seasonId = 0;
@@ -111,7 +124,9 @@
         var output = "";
         var lastEA = "";
         episodes.forEach(i => {
-            if (Number(i.NR_ST)<episodeId){
+            if (i.ST){
+                seasonId = Number(i.ST)-1;
+            }else if (Number(i.NR_ST) < episodeId){
                 seasonId++;
             }
             i.season=seasonId;
@@ -187,8 +202,14 @@ LAST	Dnl	"aflevering van ${seriesNl}"
 LAST	P1476	en:"${ep.OT}"	${source}
 LAST	P31	Q21191270
 LAST	P179	${seriesId}	P1545	"${ep.NR_GES}"	${source}
-LAST	P4908	${seasons[ep.season]}	P1545	"${ep.NR_ST}"	${source}
-LAST	P449	${networkId}	${source}
+`;
+                if (seasons[ep.season]){
+                epText +=`LAST	P4908	${seasons[ep.season]}	P1545	"${ep.NR_ST}"	${source}
+`;
+                } else {
+                    console.error("season not found\n", ep);
+                }
+                epText +=`LAST	P449	${networkId}	${source}
 LAST	P364	${originalLanguageId}	${source}
 LAST	P495	${originalCountryId}	${source}
 LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
@@ -199,6 +220,12 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
                     epText += `LAST	P577	+${ep.EAD}T00:00:00Z/11	P291	Q183	${fsSource}
 `;
                 }
+                ep.REGid.forEach(reg => {
+                    epText += `LAST	P57	${reg}	${source}
+`;});
+                ep.DRBid.forEach(drb => {
+                    epText += `LAST	P58	${drb}	${source}
+`;});
                 if (ep.PROD != ""){
                     epText += `LAST	P2364	"${ep.PROD}"	${source}
 `;
@@ -207,16 +234,13 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
                     epText += `LAST	P345	"${ep.imdb}"
 `;
                 }
-                ep.REGid.forEach(reg => {
-                    epText += `LAST	P57	${reg}	${source}
-`;});
-                ep.DRBid.forEach(drb => {
-                    epText += `LAST	P58	${drb}	${source}
-`;});
                 if (ep.hasOwnProperty("OTid")){
-                    epText = epText.replace(/LAST\sDen.*\nLAST\sDde.*\nLAST\sDnl.*\n/,"");
-                    epText = epText.replace(/(CREATE\n)?LAST/g,ep.OTid);
+                    epText = epText.replace(/LAST\sDen.*\nLAST\sDde.*\nLAST\sDnl.*\n/, "");
+                    epText = epText.replace(/(CREATE\n)?LAST/g, ep.OTid);
+                    epText = epText.replace(/\tS4656\t.*/g, "");
                 }
+                if (epText.match(/\bundefined\b/))
+                    console.error("episode includes undefined value\n", epText);
                 output += epText;
             });
         }
@@ -225,7 +249,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
         GM.setClipboard(output);
     }),"w");
     function getDate(episodeDate){
-        var result = episodeDate.replace(/{{start date(?:\|df=y(?:es)?)?\|(\d+)\|(\d+)\|(\d+)(?:\|df=y(?:es)?)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
+        var result = episodeDate.replace(/{{start date(?:\|[md]f=y(?:es)?)?\|(\d+)\|(\d+)\|(\d+)(?:\|[md]f=y(?:es)?)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
         if (!/[1-2][09]\d\d-[0-1]\d-[0-3]\d/.test(result)){
             console.error("OriginalAirDate",episodeDate);
         }
