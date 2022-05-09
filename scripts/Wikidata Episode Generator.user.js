@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.0
+// @version      0.9.1
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -123,6 +123,7 @@
         var source = `S143	Q328	S4656	"https://en.wikipedia.org/w/index.php?title=${articleName}&oldid=${version.revid}"`;
         var output = "";
         var lastEA = "";
+        var seasonMissing = false;
         episodes.forEach(i => {
             if (i.ST){
                 seasonId = Number(i.ST)-1;
@@ -131,10 +132,12 @@
             }
             i.season=seasonId;
             episodeId=i.NR_ST;
+            seasonMissing = (seasonId != -1 && seasons && !seasons[i.season]);
         });
 
         await GetEpisodeItems(seriesId, episodes);
-        if (!seasons){
+
+        if (!seasons || seasonMissing){
             var quickstatements = await GetSeasonItems(seriesId);
             if (quickstatements != ""){
                 //write Statements for adding seasons to series
@@ -145,15 +148,18 @@
                 console.warn("Please wait some time after running these QuickStatements and then rerun Wikidata Episode Generator.");
                 episodeId = 0;
                 episodes.forEach(ep => {
-                    //new season, first episode
-                    if (Number(ep.NR_ST) < episodeId){
-                        output +=`LAST	P582	+${lastEA}T00:00:00Z/11	P291	${originalCountryId}	${source}
+                    if (!seasons || !seasons[ep.season-1]) {
+                        //new season, first episode
+                        if (Number(ep.NR_ST) < episodeId){
+                            output +=`LAST	P582	+${lastEA}T00:00:00Z/11	P291	${originalCountryId}	${source}
 LAST	P1113	${episodeId}	${source}
 `;
+                        }
                     }
-                    //new season
-                    if (ep.NR_GES == 1 || Number(ep.NR_ST) < episodeId){
-                        output += `CREATE
+                    if (!seasons || !seasons[ep.season]) {
+                        //new season
+                        if (ep.NR_GES == 1 || Number(ep.NR_ST) < episodeId){
+                            output += `CREATE
 LAST	Len	"${seriesEn}, season ${ep.season+1}"
 LAST	Lde	"${series}/Staffel ${ep.season+1}"
 LAST	Den	"season of ${seriesEn}"
@@ -165,12 +171,13 @@ LAST	P495	${originalCountryId}	${source}
 LAST	P449	${networkId}	${source}
 LAST	P580	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
 `;
-                    }
-                    //last episode
-                    if (ep.NR_GES == episodes.length){
-                        output +=`LAST	P582	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
+                        }
+                        //last episode
+                        if (ep.NR_GES == episodes.length){
+                            output +=`LAST	P582	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
 LAST	P1113	${ep.NR_ST}	${source}
 `;
+                        }
                     }
                     lastEA = ep.EA
                     ep.season = seasonId;
@@ -204,7 +211,7 @@ LAST	P31	Q21191270
 LAST	P179	${seriesId}	P1545	"${ep.NR_GES}"	${source}
 `;
                 if (seasons[ep.season]){
-                epText +=`LAST	P4908	${seasons[ep.season]}	P1545	"${ep.NR_ST}"	${source}
+                    epText +=`LAST	P4908	${seasons[ep.season]}	P1545	"${ep.NR_ST}"	${source}
 `;
                 } else {
                     console.error("season not found\n", ep);
@@ -331,7 +338,7 @@ GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
                 sparqlEp[0].OTid = ep.qid.value;
             }else{
                 var matchedEp = episodes.reduce(function(prev, curr) {
-                    return levenshteinDistance(compareString(prev.OT), compareString(ep.OT.value)) < levenshteinDistance(compareString(curr.OT), compareString(ep.OT.value)) ? prev : curr;
+                    return levenshteinDistance(compareString(prev.OT), compareString(ep.OT.value)) <= levenshteinDistance(compareString(curr.OT), compareString(ep.OT.value)) ? prev : curr;
                 });
                 var epSeason;
                 if (location.pathname.includes("season")){
@@ -366,6 +373,11 @@ Wikidata-ID from Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
   _:s ps:P179 ?series;
     pq:P1545 ?number.
   BIND(CONCAT(REPLACE(STR(?series), ".*/", ""), "	P527	", REPLACE(STR(?qid), ".*/", ""), "	P1545	\\"", ?number, "\\"") AS ?quickstatements)
+  MINUS {
+    ?series p:P527 ?pQid.
+    ?pQid ps:P527 ?qid.
+    ?pQid pq:P1545 ?number.
+  }
 }
 ORDER BY (xsd:integer(?number))`;
         var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
