@@ -85,7 +85,7 @@
         if (articletext.match(/== *Season \d+ /i)){
             var tempSeason = 0;
             eps.forEach((e,i) => {
-                if (Number(e) || e.ToLowerCase() == "special"){
+                if (Number(e) || e.toLowerCase() == "special"){
                     tempSeason = e;
                     eps.splice(i+1,1);
                 }else{
