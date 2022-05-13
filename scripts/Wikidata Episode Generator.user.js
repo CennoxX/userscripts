@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.2
+// @version      0.9.3
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -81,18 +81,18 @@
         }
         var wikilinks = [];
         var plainlinks = [];
-        var eps = articletext.split(/{{(?:#invoke:)?Episode list.*\n|==+ *Season (\d+) /i).filter(i => i).map(i => i.split(/\n}}\n/)[0]).slice(1);
+        var eps = articletext.split(/{{(?:#invoke:)?Episode list.*\n|==+ *Season (\d+) |== ?(Special)s?(?: episodes?|: [^=]+)? ?(?:\((?:19|20)\d\d(?:[-–](?:19|20)?\d\d)?\))? ?==/i).filter(i => i).map(i => i.split(/\n}}\n/)[0]).slice(1);
         if (articletext.match(/== *Season \d+ /i)){
             var tempSeason = 0;
             eps.forEach((e,i) => {
-                if (Number(e)){
+                if (Number(e) || e.ToLowerCase() == "special"){
                     tempSeason = e;
                     eps.splice(i+1,1);
                 }else{
                     eps[i]+="\n |Season = "+tempSeason;
                 }
             });
-            eps = eps.filter(i => !Number(i));
+            eps = eps.filter(i => !Number(i) && i.toLowerCase() != "special" && !i.match(/Season *= *Special *$/i));
         }
         for (var doubleEpText of eps.filter(i => i.match(/=.*<hr ?\/?>.*\n/))){
             var doubleEpIndex = eps.indexOf(doubleEpText);
@@ -406,7 +406,7 @@ ORDER BY (xsd:integer(?number))`;
         });
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(response.responseText,"text/html");
-        fsDatas = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2"), "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText, "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x"), "ead": a.querySelector("div:nth-child(8)").childNodes[0]?.data?.trim()}});
+        fsDatas = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2"), "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText.replace(/ \(a\.k\.a\..*?\)/i,""), "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x"), "ead": a.querySelector("div:nth-child(8)").childNodes[0]?.data?.trim()}});
         for (var ep of episodes){
             let ot = ep.OT;
             var fsData = fsDatas.filter(id => compareString(id.Len) == compareString(ot));
