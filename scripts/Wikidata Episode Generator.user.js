@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.3
+// @version      0.9.4
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -296,6 +296,18 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
         }
         return track[str2.length][str1.length];
     }
+    async function GetSparqlResponse(request){
+        var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
+            "headers": {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Accept": "application/sparql-results+json"
+            },
+            "body": "query=" + encodeURIComponent(request).replaceAll("%20","+").replaceAll("%5Cd","%5C%5Cd"),
+            "method": "POST",
+            "mode": "cors"
+        });
+        return await resp.json();
+    }
     async function GetEpisodeItems(qid, episodes){
         console.log("loading episode items from Wikidata…");
         var request = `SELECT ?qid ?nrAll ?seasonNr ?nrSeason ?OT WHERE {
@@ -319,19 +331,11 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
     FILTER((LANG(?OT)) = "en")
   }
   BIND(REPLACE(STR(?q),".*/","") as ?qid).
+  FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date().getTime()}.}
 }
 GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
-        var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
-            "headers": {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Accept": "application/sparql-results+json"
-            },
-            "body": "query=" + encodeURIComponent(request).replaceAll("%20","+").replaceAll("%5Cd","%5C%5Cd"),
-            "method": "POST",
-            "mode": "cors"
-        });
-        var obj = await resp.json();
-        var sparqlEps = obj.results.bindings;
+        var resp = await GetSparqlResponse(request);
+        var sparqlEps = resp.results.bindings;
         for (let ep of sparqlEps){
             var sparqlEp = episodes.filter(e => compareString(e.OT) == compareString(ep.OT.value));
             if (sparqlEp.length == 1){
@@ -378,19 +382,11 @@ Wikidata-ID from Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
     ?pQid ps:P527 ?qid.
     ?pQid pq:P1545 ?number.
   }
+  FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date().getTime()}.}
 }
 ORDER BY (xsd:integer(?number))`;
-        var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
-            "headers": {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "Accept": "application/sparql-results+json"
-            },
-            "body": "query=" + encodeURIComponent(request).replaceAll("%20","+").replaceAll("%5Cd","%5C%5Cd"),
-            "method": "POST",
-            "mode": "cors"
-        });
-        var obj = await resp.json();
-        var sparqlSeasons = obj.results.bindings;
+        var resp = await GetSparqlResponse(request);
+        var sparqlSeasons = resp.results.bindings;
         return sparqlSeasons.map(i => i.quickstatements.value).join("\n");
     }
     async function GetFSData(fsId, episodes){
