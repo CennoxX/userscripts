@@ -10,10 +10,13 @@ Allows hotkeys and media keys to control the Spotify web player from any tab
 <!-- START ./docs/Spotify hotkeys.md -->
 This script adds hotkeys to control the Spotify webplayer from any tab. Note that you have to reload all tabs after installation. It can be used with keyboard hotkeys or with <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaKeys">MediaKeys</a>.
 
+keyboard hotkeys:<br />
 <kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>p</kbd> – play/pause<br />
 <kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>s</kbd> – stop<br />
 <kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>,</kbd> – previous title<br />
-<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>.</kbd> – next title
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>.</kbd> – next title<br />
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>l</kbd> – love title<br />
+<kbd>ctrl</kbd> + <kbd>alt</kbd> + <kbd>u</kbd> – unlove title
 
 <!-- END ./docs/Spotify hotkeys.md -->
 
@@ -77,6 +80,7 @@ Gets data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
 This script loads data from <a href="http://www.imdb.com/">IMDb</a> for using it in <a href="http://www.wikidata.org/">Wikidata</a>.
 
 To do so, it loads the <a href="http://json-ld.org/">JSON-LD</a> of currently opened IMDb-sites, where some simple statements like actor, writer, date published, etc. (and their IMDb-IDs) are stored. From Wikidata the script loads the according Wikidata items with the help of the IMDb-IDs. The statements then are inserted to the form of <a href="https://tools.wmflabs.org/quickstatements/#/batch">QuickStatements</a> for an import to Wikidata. Source statements are also made. To work, you need to be logged in to QuickStatements and have the tab opened. To import the data click on the button <i>Import V1 commands</i>.
+
 <!-- END ./docs/JSON-LD from IMDb to QuickStatements.md -->
 
 </details>
