@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.4
+// @version      0.9.5
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -51,6 +51,20 @@
         });
         var jsonObj = Object.values((JSON.parse(response.responseText)).entities)[0];
         var seriesId = 0;
+        window.addEventListener("unhandledrejection", async (ex) => {
+            var propertyUndefined;
+            if (propertyUndefined = ex.reason.message.match(/.*\.(P\d+) is undefined/)){
+                var response = await GM.xmlHttpRequest({
+                    method: "GET",
+                    url: `https://www.wikidata.org/w/api.php?action=wbgetentities&props=labels&ids=${propertyUndefined[1]}&languages=en&format=json`,
+                    onload: function(response) {
+                        return response;
+                    }
+                });
+                var url = `https://www.wikidata.org/wiki/${seriesId}`
+                console.error(`The property "${JSON.parse(response.responseText).entities[propertyUndefined[1]].labels.en.value}" (${propertyUndefined[1]}) is missing from the series item (${url})`);
+            }
+        });
         if (article.split("List of ").length==2){
             seriesId = jsonObj.claims.P360[0].qualifiers.P179[0].datavalue.value.id;
         }else if(article.split("season").length==2){
