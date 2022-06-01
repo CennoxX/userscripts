@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.5
+// @version      0.9.6
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -123,7 +123,7 @@
             return {
                 "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
                 "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *(?:\n|\|)")??i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber2\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
-                "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,"").split(/\[\[.*\||\[\[|\]\]/g).join("").trim().replace("{{'-}}","'").replace(/^(.*?)(?=[^\dXVI]{2}.) ?[,:\-–]? \(?(?:part )?([\dXVI]+)\)?/i,"$1, part $2"),
+                "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,"").split(/\[\[.*\||\[\[|\]\]/g).join("").trim().replace(/{{'-}}/g,"'").replace(/{{visible anchor\|(.*)}}/g,"$1").replace(/^(.*?)(?=[^\dXVI]{2}.) ?[,:\-–]? \(?(?:part )?([\dXVI]+)\)?/i,"$1, part $2"),
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
                 "DRB": [...new Set([...[...(i.matchAll("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
@@ -265,6 +265,9 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
                 output += epText;
             });
         }
+        if (!jsonObj.claims.hasOwnProperty("P5327") && fsId)
+            output += `${seriesId}	P5327	"${fsId}"
+`;
         console.log(output);
         console.warn("Please check all QuickStatements for correctness before execution at https://quickstatements.toolforge.org/#/batch.");
         GM.setClipboard(output);
@@ -279,9 +282,12 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
     function compareString(title){
         if (!title)
             return null;
-        var partEp = title.match(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?#?([\dXVI]+)\)? *$/i);
+        var partEp = title.match(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:(?:part|teil) )?#?([\dXVI]+|one|two)\)? *$/i);
         if (partEp)
-            title = partEp[1] + (Number(partEp[2]) ? getRomanNumber(partEp[2]) : partEp[2]);
+        {
+            var part2 = partEp[2].replace(/one/i, "1").replace(/two/i, "2");
+            title = partEp[1] + (Number(part2) ? getRomanNumber(part2) : part2);
+        }
         return title.trim().toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/&/i, "and").replace(/^the |^a |[\u200B-\u200D\uFEFF]| |\.|'|’|\(|\)|:|,|‚|\?|!|„|“|"|‘|…|\.|—|–|-/gi,"");
     }
     function getRomanNumber(n){
@@ -345,7 +351,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
     FILTER((LANG(?OT)) = "en")
   }
   BIND(REPLACE(STR(?q),".*/","") as ?qid).
-  FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date().getTime()}.}
+  FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date()%1000}.}
 }
 GROUP BY ?qid ?nrAll ?nrSeason ?seasonNr ?OT`;
         var resp = await GetSparqlResponse(request);
@@ -396,7 +402,7 @@ Wikidata-ID from Wikidata: #${ep.nrAll.value} / ${epNr} ${ep.OT.value}`
     ?pQid ps:P527 ?qid.
     ?pQid pq:P1545 ?number.
   }
-  FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date().getTime()}.}
+  FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date()%1000}.}
 }
 ORDER BY (xsd:integer(?number))`;
         var resp = await GetSparqlResponse(request);
