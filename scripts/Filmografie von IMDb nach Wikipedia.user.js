@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      2.2.6
+// @version      2.2.7
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -34,13 +34,13 @@
         var filmography = [];
         var request = 0;
         var done = 0;
-        document.links.forEach(link => {
+        [...document.links].forEach(link => {
             if (link.innerText.startsWith('Show all')){
                 link.click();
             }
         });
         setTimeout(() => {
-            work.forEach(w => {
+            [...work].forEach(w => {
                 var credit = new Credit();
                 var years = w.querySelector('.year_column').innerText.trim().split('/')[0].split('-');
                 credit.yearFrom = years[0];
