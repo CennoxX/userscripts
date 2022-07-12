@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.6
+// @version      0.9.7
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -14,6 +14,7 @@
 // @grant        GM.xmlHttpRequest
 // @grant        GM.setClipboard
 // @grant        GM.registerMenuCommand
+// @grant        unsafeWindow
 // @license      MIT
 // ==/UserScript==
 /* jshint esversion: 10 */
@@ -23,8 +24,9 @@
 
 (function() {
     "use strict";
-    GM.registerMenuCommand("convert episode lists for Wikidata",
-                           (async()=>{
+    unsafeWindow.generateEpisodes = generateEpisodes;
+    GM.registerMenuCommand("convert episode lists for Wikidata", generateEpisodes, "w");
+    async function generateEpisodes(){
         console.clear();
         var article = document.title.split(" – Wikipedia")[0];
         var response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${encodeURIComponent(article)}&rvslots=*&rvprop=content|ids&formatversion=2&format=json`);
@@ -271,7 +273,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
         console.log(output);
         console.warn("Please check all QuickStatements for correctness before execution at https://quickstatements.toolforge.org/#/batch.");
         GM.setClipboard(output);
-    }),"w");
+    }
     function getDate(episodeDate){
         var result = episodeDate.replace(/{{start date(?:\|[md]f=y(?:es)?)?\|(\d+)\|(\d+)\|(\d+)(?:\|[md]f=y(?:es)?)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
         if (!/[1-2][09]\d\d-[0-1]\d-[0-3]\d/.test(result)){
@@ -423,6 +425,8 @@ ORDER BY (xsd:integer(?number))`;
         var parser = new DOMParser();
         var xmlDoc = parser.parseFromString(response.responseText,"text/html");
         fsDatas = [...xmlDoc.querySelectorAll("a[data-event-category=liste-episoden]")].map(a => {return{"Lde": a.querySelector("div:nth-child(7)>span").innerText.replace(/^(.*?)(?=[^\d]{2}.) ?[,:\-–]? \(?(?:Teil )?(\d+)\)?/i,"$1 – Teil $2"), "Len": a.querySelector("div:nth-child(7)>span.episodenliste-schmal")?.innerText.replace(/ \(a\.k\.a\..*?\)/i,""), "nr": a.querySelector("div:nth-child(2)")?.firstChild?.nodeValue, "epNr": a.querySelector("span:nth-child(1)").innerText.replace(".","x"), "ead": a.querySelector("div:nth-child(8)").childNodes[0]?.data?.trim()}});
+        if (fsDatas.length == 0)
+            return;
         for (var ep of episodes){
             let ot = ep.OT;
             var fsData = fsDatas.filter(id => compareString(id.Len) == compareString(ot));
