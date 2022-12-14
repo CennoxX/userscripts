@@ -113,6 +113,17 @@ To generate the episode items, open a Wikipedia article with an episode list. Af
 
 </details>
 
+###### [Paywall Breaker](https://greasyfork.org/de/scripts/446773-paywall-breaker/)
+Removes paywalls from news sites
+
+<details>
+<summary>details</summary>
+
+<!-- START ./docs/Paywall Breaker.md -->
+<!-- END ./docs/Paywall Breaker.md -->
+
+</details>
+
 ### deutsche Scripte
 ##### [Gmail Calender Connector](https://greasyfork.org/scripts/33508-gmail-calender-connector/)
 Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
