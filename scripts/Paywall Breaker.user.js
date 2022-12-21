@@ -154,8 +154,8 @@
                 break;
             }
         case "www.nnn.de":
-        case "www.svz.de":
         case "www.shz.de":
+        case "www.svz.de":
             {
                 if (document.querySelector(".paywall--classic")){
                     var ampLink = document.querySelector("link[rel='amphtml']").href;
