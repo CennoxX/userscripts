@@ -16,6 +16,7 @@ Supported pages:
 * maz-online.de
 * mittelhessen.de
 * neuepresse.de
+* nnn.de
 * oberhessische-zeitung.de
 * op-marburg.de
 * ostsee-zeitung.de
@@ -24,6 +25,8 @@ Supported pages:
 * rundschau-online.de
 * siegener-zeitung.de
 * sn-online.de
+* shz.de
+* svz.de
 * waz-online.de
 * wiesbadener-kurier.de
 * wormser-zeitung.de
