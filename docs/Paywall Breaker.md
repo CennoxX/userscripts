@@ -23,9 +23,9 @@ Supported pages:
 * paz-online.de
 * rnd.de
 * rundschau-online.de
+* shz.de
 * siegener-zeitung.de
 * sn-online.de
-* shz.de
 * svz.de
 * waz-online.de
 * wiesbadener-kurier.de
