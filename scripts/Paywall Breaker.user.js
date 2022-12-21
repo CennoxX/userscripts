@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Paywall Breaker
-// @version      0.5.1
+// @version      0.6.0
 // @description  Removes paywalls from news sites
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -21,6 +21,7 @@
 // @match        https://www.maz-online.de/*
 // @match        https://www.mittelhessen.de/*
 // @match        https://www.neuepresse.de/*
+// @match        https://www.nnn.de/*
 // @match        https://www.oberhessische-zeitung.de/*
 // @match        https://www.op-marburg.de/*
 // @match        https://www.ostsee-zeitung.de/*
@@ -28,6 +29,8 @@
 // @match        https://www.rnd.de/*
 // @match        https://www.rundschau-online.de/*
 // @match        https://www.siegener-zeitung.de/*
+// @match        https://www.shz.de/*
+// @match        https://www.svz.de/*
 // @match        https://www.sn-online.de/*
 // @match        https://www.waz-online.de/*
 // @match        https://www.wiesbadener-kurier.de/*
@@ -44,15 +47,15 @@
     "use strict";
     var site,html,parser,htmlDoc,articleText,jsonText,jsonObj,locationText;
     switch (location.hostname) {
-        case 'www.allgemeine-zeitung.de':
-        case 'www.echo-online.de':
-        case 'www.hochheimer-zeitung.de':
-        case 'www.lauterbacher-anzeiger.de':
-        case 'www.main-spitze.de':
-        case 'www.mittelhessen.de':
-        case 'www.oberhessische-zeitung.de':
-        case 'www.wiesbadener-kurier.de':
-        case 'www.wormser-zeitung.de':
+        case "www.allgemeine-zeitung.de":
+        case "www.echo-online.de":
+        case "www.hochheimer-zeitung.de":
+        case "www.lauterbacher-anzeiger.de":
+        case "www.main-spitze.de":
+        case "www.mittelhessen.de":
+        case "www.oberhessische-zeitung.de":
+        case "www.wiesbadener-kurier.de":
+        case "www.wormser-zeitung.de":
             {
                 GM.addStyle(".loadingBanner,.adSlot {display:none!important;}");
                 if (document.querySelector(".articleHeader__top .badges")){
@@ -99,7 +102,7 @@
                 }
                 break;
             }
-        case 'www.cz.de':
+        case "www.cz.de":
             {
                 GM.addStyle(".content-subscription-box,.newsletter-signup-wrapper {display:none;}");
                 document.querySelector("article").classList.remove("news-read-not-allowed");
@@ -110,20 +113,20 @@
                 document.querySelector(".field__items").innerHTML = htmlDoc.querySelector(".field__items").innerHTML;
                 break;
             }
-        case 'www.dnn.de':
-        case 'www.goettinger-tageblatt.de':
-        case 'www.haz.de':
-        case 'www.kn-online.de':
-        case 'www.ln-online.de':
-        case 'www.lvz.de':
-        case 'www.maz-online.de':
-        case 'www.neuepresse.de':
-        case 'www.op-marburg.de':
-        case 'www.ostsee-zeitung.de':
-        case 'www.paz-online.de':
-        case 'www.siegener-zeitung.de':
-        case 'www.sn-online.de':
-        case 'www.waz-online.de':
+        case "www.dnn.de":
+        case "www.goettinger-tageblatt.de":
+        case "www.haz.de":
+        case "www.kn-online.de":
+        case "www.ln-online.de":
+        case "www.lvz.de":
+        case "www.maz-online.de":
+        case "www.neuepresse.de":
+        case "www.op-marburg.de":
+        case "www.ostsee-zeitung.de":
+        case "www.paz-online.de":
+        case "www.siegener-zeitung.de":
+        case "www.sn-online.de":
+        case "www.waz-online.de":
             {
                 if(location.href.endsWith("?outputType=valid_amp")) {
                     location.href = location.href.replace("?outputType=valid_amp","");
@@ -145,12 +148,29 @@
                         elements.splice(appAdIndex, 3);
                     articleText = locationText + elements.map(i => (i.type=="header"?'<h2 class="h2-pw">':"") + (i.text??"") + (i.type == "header"?"</h2>":"") + (i.type == "image"?`<div><img alt="${i.imageInfo?.alt}" src="${i.imageInfo?.src}" width="100%"><div class=""><p class="ClTDP">${i.imageInfo?.caption}</p><p class="bIdZuO">${i.imageInfo?.credit}</p></div></div>`:"") + (i.type == "list"?"<ul>" + i.list?.items?.map(l => "<li>• " + l.text + "</li>").join("") + "</ul>":"")).join('</p><p class="space-pw">');
                     console.log(articleText);
-                    document.querySelector('header > div > div > p').innerHTML = articleText;
+                    document.querySelector("header > div > div > p").innerHTML = articleText;
                     document.querySelector('[class^="ArticleHeadstyled__ArticleTeaserContainer-"]').style.height = "100%";
                 }
                 break;
             }
-        case 'www.rnd.de':
+        case "www.nnn.de":
+        case "www.svz.de":
+        case "www.shz.de":
+            {
+                if (document.querySelector(".paywall--classic")){
+                    var ampLink = document.querySelector("link[rel='amphtml']").href;
+                    site = await fetch(ampLink);
+                    html = await site.text();
+                    parser = new DOMParser();
+                    htmlDoc = parser.parseFromString(html, "text/html");
+                    articleText = htmlDoc.querySelector("div.paywall > section").innerHTML;
+                    articleText = articleText.replace(/<amp-(img)/g,"<$1");
+                    console.log(articleText);
+                    document.querySelector("article > section:nth-child(2)").innerHTML = articleText;
+                }
+                break;
+            }
+        case "www.rnd.de":
             {
                 if (document.querySelector('header > div > div > [class^="Textstyled__Text-"]')){
                     GM.addStyle('[class^="ArticleContentLoaderstyled__Gradient-"],article > svg {display:none;}');
@@ -163,7 +183,7 @@
                 }
                 break;
             }
-        case 'www.rundschau-online.de':
+        case "www.rundschau-online.de":
             {
                 GM.addStyle(".tm-visible,.dm-slot--desktop {display:none!important;}");
                 GM.addStyle(".dm-mural.dm-paint,.dm-mural.dm-paint .dm-figure {filter:initial!important; pointer-events:initial!important; user-select:initial!important;}");
