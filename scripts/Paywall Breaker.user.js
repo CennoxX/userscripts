@@ -28,10 +28,10 @@
 // @match        https://www.paz-online.de/*
 // @match        https://www.rnd.de/*
 // @match        https://www.rundschau-online.de/*
-// @match        https://www.siegener-zeitung.de/*
 // @match        https://www.shz.de/*
-// @match        https://www.svz.de/*
+// @match        https://www.siegener-zeitung.de/*
 // @match        https://www.sn-online.de/*
+// @match        https://www.svz.de/*
 // @match        https://www.waz-online.de/*
 // @match        https://www.wiesbadener-kurier.de/*
 // @match        https://www.wormser-zeitung.de/*
