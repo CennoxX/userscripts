@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Paywall Breaker
-// @version      0.6.0
+// @version      0.6.1
 // @description  Removes paywalls from news sites
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -104,13 +104,17 @@
             }
         case "www.cz.de":
             {
-                GM.addStyle(".content-subscription-box,.newsletter-signup-wrapper {display:none;}");
-                document.querySelector("article").classList.remove("news-read-not-allowed");
-                site = await fetch(location.href);
-                html = await site.text();
-                parser = new DOMParser();
-                htmlDoc = parser.parseFromString(html, "text/html");
-                document.querySelector(".field__items").innerHTML = htmlDoc.querySelector(".field__items").innerHTML;
+                if (document.querySelector("#erasmo")){
+                    GM.addStyle(".content-subscription-box,.newsletter-signup-wrapper {display:none;}");
+                    document.querySelector("article").classList.remove("news-read-not-allowed");
+                    site = await fetch(location.href);
+                    html = await site.text();
+                    parser = new DOMParser();
+                    htmlDoc = parser.parseFromString(html, "text/html");
+                    articleText = htmlDoc.querySelector(".field__items").innerHTML;
+                    console.log(articleText);
+                    document.querySelector(".field__items").innerHTML = articleText;
+                }
                 break;
             }
         case "www.dnn.de":
