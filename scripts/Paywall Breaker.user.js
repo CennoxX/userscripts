@@ -1,7 +1,9 @@
 // ==UserScript==
 // @name         Paywall Breaker
+// @name:de      Paywall Breaker
 // @version      0.6.1
 // @description  Removes paywalls from news sites
+// @description  Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
