@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.7.0
+// @version      0.7.1
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -170,10 +170,10 @@
             var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p > span")];
             paragraphs.forEach((p,i) => {p.innerText = texts[i]});
 
-            [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML=i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background:linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
+            [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML=i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background: ?linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
             var toggleBoxes = [...document.querySelectorAll(".toggleBox__content.--padding.--border")];
             toggleBoxes.forEach((toggleBox)=>{
-                var elementLength = toggleBox.querySelectorAll(".infoBox__storylineElement").length;
+                var elementLength = toggleBox.querySelectorAll(".infoBox__storylineElement .--small").length;
                 var cursor = 0;
                 var source = toggleBox.innerHTML;
                 var splittedSource = source.split(/(<.*?>)/);
