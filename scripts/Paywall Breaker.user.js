@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.6.1
+// @version      0.7.0
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -47,7 +47,7 @@
 
 (async function() {
     "use strict";
-    var site,html,parser,htmlDoc,articleText,jsonText,jsonObj,locationText;
+    var url,site,html,parser,htmlDoc,articleText,jsonText,jsonObj,locationText;
     switch (location.hostname) {
         case "www.allgemeine-zeitung.de":
         case "www.echo-online.de":
@@ -60,48 +60,8 @@
         case "www.wormser-zeitung.de":
             {
                 GM.addStyle(".loadingBanner,.adSlot {display:none!important;}");
-                if (document.querySelector(".articleHeader__top .badges")){
-                    GM.addStyle(".quoteWrapper {display:none;}");
-                    document.querySelector(".storyElementWrapper__paywall > div").style.display = "none";
-                    document.querySelector(".storyElementWrapper__paywallContainer").classList.remove("storyElementWrapper__paywallContainer");
-                    document.querySelector(".storyElementWrapper__paywall").classList.replace("storyElementWrapper__paywall","storyElementWrapper");
-                    document.querySelector(".storyElementWrapper__paywallStoryline").classList.replace("storyElementWrapper__paywallStoryline","storyElementWrapper__Storyline");
-                    site = await fetch(location.href);
-                    html = await site.text();
-                    parser = new DOMParser();
-                    htmlDoc = parser.parseFromString(html, "text/html");
-                    jsonText = htmlDoc.querySelector("div~script").innerText.replace(/^window\.__INITIAL_STATE__=/,"").replace(/;\(function\(\).*/,"");
-                    jsonObj = JSON.parse(jsonText);
-                    articleText = jsonObj.contentPage.data.context.storylineText;
-                    console.log(articleText);
-                    var texts = articleText.split(/<\/p>/).map(i => i.slice(3));
-                    if (location.href.split("/")[3] == "lokales"){
-                        locationText = document.querySelector(".storyPage__sectionLink").innerText;
-                        texts[0] = `${locationText}. ${texts[0]}`;
-                    }
-                    [...document.querySelectorAll(".storyElementWrapper__container>div>p")].forEach(i => {i.parentElement.parentElement.innerHTML = i.parentElement.parentElement.innerHTML.replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --medium")});
-                    var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p > span")];
-                    paragraphs.forEach((p,i) => {p.innerText = texts[i]});
-
-                    [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML=i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background:linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
-                    var toggleBoxes = [...document.querySelectorAll(".toggleBox__content.--padding.--border")];
-                    toggleBoxes.forEach((toggleBox)=>{
-                        var elementLength = toggleBox.querySelectorAll(".infoBox__storylineElement").length;
-                        var cursor = 0;
-                        var source = toggleBox.innerHTML;
-                        var splittedSource = source.split(/(<.*?>)/);
-                        var replaceText = texts.slice(paragraphs.length, paragraphs.length + elementLength).join("");
-                        var replaceTexts = [];
-                        for (let splittedText of splittedSource){
-                            if (splittedText.length != 0 && splittedText.slice(0,1)!="<"){
-                                splittedText = replaceText.slice(cursor,cursor+splittedText.length);
-                                cursor += splittedText.length;
-                            }
-                            replaceTexts.push(splittedText);
-                        }
-                        toggleBox.innerHTML = replaceTexts.join("");
-                    });
-                }
+                breakVrmArticles();
+                setInterval(() => {if (url != null && location.href != url){GM.addStyle("div.contentWrapper.app__content.--page {display:none!important;}");url = location.href; location.reload();}},0);
                 break;
             }
         case "www.cz.de":
@@ -130,6 +90,7 @@
         case "www.op-marburg.de":
         case "www.ostsee-zeitung.de":
         case "www.paz-online.de":
+        case "www.rnd.de":
         case "www.siegener-zeitung.de":
         case "www.sn-online.de":
         case "www.waz-online.de":
@@ -176,19 +137,6 @@
                 }
                 break;
             }
-        case "www.rnd.de":
-            {
-                if (document.querySelector('header > div > div > [class^="Textstyled__Text-"]')){
-                    GM.addStyle('[class^="ArticleContentLoaderstyled__Gradient-"],article > svg {display:none;}');
-                    jsonText = [...document.querySelectorAll('script[type="application/ld+json"]')].pop().innerHTML;
-                    jsonObj = JSON.parse(jsonText);
-                    articleText = jsonObj.articleBody;
-                    console.log(articleText);
-                    document.querySelector('header > div > div > [class^="Textstyled__Text-"]').innerHTML = articleText;
-                    document.querySelector('[class^="ArticleHeadstyled__ArticleTeaserContainer-"]').style.height = "100%";
-                }
-                break;
-            }
         case "www.rundschau-online.de":
             {
                 GM.addStyle(".tm-visible,.dm-slot--desktop {display:none!important;}");
@@ -196,4 +144,50 @@
                 break;
             }
     }
+    async function breakVrmArticles(){
+        url = location.href
+        GM.addStyle(".div.contentWrapper.app__content.--page {display:initial!important;}");
+        if (document.querySelector(".articleHeader__top .badges")){
+            GM.addStyle(".quoteWrapper {display:none;}");
+            document.querySelector(".storyElementWrapper__paywall > div").style.display = "none";
+            document.querySelector(".storyElementWrapper__paywallContainer").classList.remove("storyElementWrapper__paywallContainer");
+            document.querySelector(".storyElementWrapper__paywall").classList.replace("storyElementWrapper__paywall","storyElementWrapper");
+            document.querySelector(".storyElementWrapper__paywallStoryline").classList.replace("storyElementWrapper__paywallStoryline","storyElementWrapper__Storyline");
+            site = await fetch(location.href);
+            html = await site.text();
+            parser = new DOMParser();
+            htmlDoc = parser.parseFromString(html, "text/html");
+            jsonText = htmlDoc.querySelector("div~script").innerText.replace(/^window\.__INITIAL_STATE__=/,"").replace(/;\(function\(\).*/,"");
+            jsonObj = JSON.parse(jsonText);
+            articleText = jsonObj.contentPage.data.context.storylineText;
+            console.log(articleText);
+            var texts = articleText.split(/<\/p>/).map(i => i.slice(3));
+            if (location.href.split("/")[3] == "lokales"){
+                locationText = document.querySelector(".storyPage__sectionLink").innerText;
+                texts[0] = `${locationText}. ${texts[0]}`;
+            }
+            [...document.querySelectorAll(".storyElementWrapper__container>div>p")].forEach(i => {i.parentElement.parentElement.innerHTML = i.parentElement.parentElement.innerHTML.replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --medium")});
+            var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p > span")];
+            paragraphs.forEach((p,i) => {p.innerText = texts[i]});
+
+            [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML=i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background:linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
+            var toggleBoxes = [...document.querySelectorAll(".toggleBox__content.--padding.--border")];
+            toggleBoxes.forEach((toggleBox)=>{
+                var elementLength = toggleBox.querySelectorAll(".infoBox__storylineElement").length;
+                var cursor = 0;
+                var source = toggleBox.innerHTML;
+                var splittedSource = source.split(/(<.*?>)/);
+                var replaceText = texts.slice(paragraphs.length, paragraphs.length + elementLength).join("");
+                var replaceTexts = [];
+                for (let splittedText of splittedSource){
+                    if (splittedText.length != 0 && splittedText.slice(0,1)!="<"){
+                        splittedText = replaceText.slice(cursor,cursor+splittedText.length);
+                        cursor += splittedText.length;
+                    }
+                    replaceTexts.push(splittedText);
+                }
+                toggleBox.innerHTML = replaceTexts.join("");
+            });
+        }
+    };
 })();
