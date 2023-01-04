@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.7.2
+// @version      0.7.3
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -163,10 +163,10 @@
             console.log(articleText);
 
             var texts = articleText.split(/<\/p>/).map(i => i.slice(3));
-            [...document.querySelectorAll(".storyElementWrapper__container > div > p")].forEach(i => {i.parentElement.parentElement.innerHTML = i.parentElement.parentElement.innerHTML.replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --medium")});
+            [...document.querySelectorAll(".storyElementWrapper__container > div > p:not(.multimediaIntro)")].forEach(i => {i.parentElement.parentElement.innerHTML = i.parentElement.parentElement.innerHTML.replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --medium")});
             [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML = i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background: ?linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
 
-            var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p > span"),...document.querySelectorAll(".toggleBox__content.--padding.--border .infoBox__storylineElement p.--small > span")];
+            var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p:not(.multimediaIntro) > span"),...document.querySelectorAll(".toggleBox__content.--padding.--border .infoBox__storylineElement p.--small > span")];
             paragraphs.forEach((p,i) => {
                 var cursor = 0;
                 var source = p.innerHTML;
