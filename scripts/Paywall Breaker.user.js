@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.7.1
+// @version      0.7.2
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -61,7 +61,7 @@
             {
                 GM.addStyle(".loadingBanner,.adSlot {display:none!important;}");
                 breakVrmArticles();
-                setInterval(() => {if (url != null && location.href != url){GM.addStyle("div.contentWrapper.app__content.--page {display:none!important;}");url = location.href; location.reload();}},0);
+                setInterval(() => {if (url != null && location.href != url){GM.addStyle("div.contentWrapper.app__content.--page {display:none!important;}"); url = location.href; location.reload();}},0);
                 break;
             }
         case "www.cz.de":
@@ -161,32 +161,36 @@
             jsonObj = JSON.parse(jsonText);
             articleText = jsonObj.contentPage.data.context.storylineText;
             console.log(articleText);
-            var texts = articleText.split(/<\/p>/).map(i => i.slice(3));
-            if (location.href.split("/")[3] == "lokales"){
-                locationText = document.querySelector(".storyPage__sectionLink").innerText;
-                texts[0] = `${locationText}. ${texts[0]}`;
-            }
-            [...document.querySelectorAll(".storyElementWrapper__container>div>p")].forEach(i => {i.parentElement.parentElement.innerHTML = i.parentElement.parentElement.innerHTML.replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --medium")});
-            var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p > span")];
-            paragraphs.forEach((p,i) => {p.innerText = texts[i]});
 
-            [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML=i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background: ?linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
-            var toggleBoxes = [...document.querySelectorAll(".toggleBox__content.--padding.--border")];
-            toggleBoxes.forEach((toggleBox)=>{
-                var elementLength = toggleBox.querySelectorAll(".infoBox__storylineElement .--small").length;
+            var texts = articleText.split(/<\/p>/).map(i => i.slice(3));
+            [...document.querySelectorAll(".storyElementWrapper__container > div > p")].forEach(i => {i.parentElement.parentElement.innerHTML = i.parentElement.parentElement.innerHTML.replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --medium")});
+            [...document.querySelectorAll(".toggleBox__content.--padding.--border")].forEach(i => {i.closest(".storyElementWrapper__container").innerHTML = i.closest(".storyElementWrapper__container").innerHTML.replace(/(style=")(background: ?linear-gradient)/g,"$1display:none;$2").replace(/(storyElementWrapper__element)/g,"contentWrapper $1 --small").replace(/(class="toggleBox__contentWrapper --medium")/g,"style=\"height:auto!important\" $1").replace(/(class="toggleBox__headline paragraph --blockIntro")/g,"style=\"display:none\" $1")});
+
+            var paragraphs = [...document.querySelectorAll(".storyElementWrapper__container > div > p > span"),...document.querySelectorAll(".toggleBox__content.--padding.--border .infoBox__storylineElement p.--small > span")];
+            paragraphs.forEach((p,i) => {
                 var cursor = 0;
-                var source = toggleBox.innerHTML;
+                var source = p.innerHTML;
+                if (i == 0){
+                    [locationText, source] = source.split(/\. (.*)/s).filter(i => i);
+                }
                 var splittedSource = source.split(/(<.*?>)/);
-                var replaceText = texts.slice(paragraphs.length, paragraphs.length + elementLength).join("");
+                var replaceText = texts[i];
                 var replaceTexts = [];
                 for (let splittedText of splittedSource){
-                    if (splittedText.length != 0 && splittedText.slice(0,1)!="<"){
-                        splittedText = replaceText.slice(cursor,cursor+splittedText.length);
+                    if (splittedText.length != 0 && splittedText.slice(0,1) != "<"){
+                        splittedText = replaceText.slice(cursor,cursor + splittedText.length);
                         cursor += splittedText.length;
                     }
                     replaceTexts.push(splittedText);
                 }
-                toggleBox.innerHTML = replaceTexts.join("");
+                replaceText = replaceTexts.join("");
+                if (i == 0 && location.href.split("/")[3] == "lokales"){
+                    var locationLinkText = document.querySelector(".storyPage__sectionLink").innerText;
+                    if (locationText.length == locationLinkText.length){
+                        replaceText = `${locationLinkText}. ${replaceText}`;
+                    }
+                }
+                p.innerHTML = replaceText;
             });
         }
     };
