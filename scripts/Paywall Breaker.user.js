@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.7.3
+// @version      0.7.4
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -110,7 +110,10 @@
                     var readAlsoIndex = elements.findIndex(i => i.text?.includes("Lesen Sie auch"));
                     if (readAlsoIndex != -1)
                         elements.splice(readAlsoIndex, 2);
-                    var appAdIndex = elements.findIndex(i => i.text?.match(/Laden Sie sich jetzt hier kostenfrei unsere neue .*-App herunter:/));
+                    var appAdIndex = elements.findIndex(i => i.text?.match(/Laden Sie sich jetzt hier kostenfrei unsere .*-App.* herunter:/));
+                    if (appAdIndex != -1)
+                        elements.splice(appAdIndex, 3);
+                    appAdIndex = elements.findIndex(i => i.text?.match(/Laden Sie sich jetzt hier kostenfrei unsere .*-App.* herunter[^:]/));
                     if (appAdIndex != -1)
                         elements.splice(appAdIndex, 3);
                     articleText = locationText + elements.map(i => (i.type=="header"?'<h2 class="h2-pw">':"") + (i.text??"") + (i.type == "header"?"</h2>":"") + (i.type == "image"?`<div><img alt="${i.imageInfo?.alt}" src="${i.imageInfo?.src}" width="100%"><div class=""><p class="ClTDP">${i.imageInfo?.caption}</p><p class="bIdZuO">${i.imageInfo?.credit}</p></div></div>`:"") + (i.type == "list"?"<ul>" + i.list?.items?.map(l => "<li>• " + l.text + "</li>").join("") + "</ul>":"")).join('</p><p class="space-pw">');
