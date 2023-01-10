@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.7.4
+// @version      0.8.0
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -16,6 +16,7 @@
 // @match        https://www.haz.de/*
 // @match        https://www.hochheimer-zeitung.de/*
 // @match        https://www.kn-online.de/*
+// @match        https://www.ksta.de/*
 // @match        https://www.lauterbacher-anzeiger.de/*
 // @match        https://www.ln-online.de/*
 // @match        https://www.lvz.de/*
@@ -123,6 +124,13 @@
                 }
                 break;
             }
+        case "www.ksta.de":
+        case "www.rundschau-online.de":
+            {
+                GM.addStyle(".tm-visible,.dm-slot {display:none!important;}");
+                document.querySelector(".dm-mural.dm-paint").classList.remove("dm-mural","dm-paint");
+                break;
+            }
         case "www.nnn.de":
         case "www.shz.de":
         case "www.svz.de":
@@ -138,12 +146,6 @@
                     console.log(articleText);
                     document.querySelector("article > section:nth-child(2)").innerHTML = articleText;
                 }
-                break;
-            }
-        case "www.rundschau-online.de":
-            {
-                GM.addStyle(".tm-visible,.dm-slot--desktop {display:none!important;}");
-                GM.addStyle(".dm-mural.dm-paint,.dm-mural.dm-paint .dm-figure {filter:initial!important; pointer-events:initial!important; user-select:initial!important;}");
                 break;
             }
     }
