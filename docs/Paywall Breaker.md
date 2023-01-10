@@ -9,6 +9,7 @@ Supported pages:
 * haz.de
 * hochheimer-zeitung.de
 * kn-online.de
+* ksta.de
 * lauterbacher-anzeiger.de
 * ln-online.de
 * lvz.de
