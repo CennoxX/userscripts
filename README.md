@@ -139,17 +139,14 @@ Supported pages:
 * maz-online.de
 * mittelhessen.de
 * neuepresse.de
-* nnn.de
 * oberhessische-zeitung.de
 * op-marburg.de
 * ostsee-zeitung.de
 * paz-online.de
 * rnd.de
 * rundschau-online.de
-* shz.de
 * siegener-zeitung.de
 * sn-online.de
-* svz.de
 * waz-online.de
 * wiesbadener-kurier.de
 * wormser-zeitung.de
