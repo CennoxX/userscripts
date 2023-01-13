@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.8.0
+// @version      0.8.1
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -24,17 +24,14 @@
 // @match        https://www.maz-online.de/*
 // @match        https://www.mittelhessen.de/*
 // @match        https://www.neuepresse.de/*
-// @match        https://www.nnn.de/*
 // @match        https://www.oberhessische-zeitung.de/*
 // @match        https://www.op-marburg.de/*
 // @match        https://www.ostsee-zeitung.de/*
 // @match        https://www.paz-online.de/*
 // @match        https://www.rnd.de/*
 // @match        https://www.rundschau-online.de/*
-// @match        https://www.shz.de/*
 // @match        https://www.siegener-zeitung.de/*
 // @match        https://www.sn-online.de/*
-// @match        https://www.svz.de/*
 // @match        https://www.waz-online.de/*
 // @match        https://www.wiesbadener-kurier.de/*
 // @match        https://www.wormser-zeitung.de/*
@@ -129,23 +126,6 @@
             {
                 GM.addStyle(".tm-visible,.dm-slot {display:none!important;}");
                 document.querySelector(".dm-mural.dm-paint").classList.remove("dm-mural","dm-paint");
-                break;
-            }
-        case "www.nnn.de":
-        case "www.shz.de":
-        case "www.svz.de":
-            {
-                if (document.querySelector(".paywall--classic")){
-                    var ampLink = document.querySelector("link[rel='amphtml']").href;
-                    site = await fetch(ampLink);
-                    html = await site.text();
-                    parser = new DOMParser();
-                    htmlDoc = parser.parseFromString(html, "text/html");
-                    articleText = htmlDoc.querySelector("div.paywall > section").innerHTML;
-                    articleText = articleText.replace(/<amp-(img)/g,"<$1");
-                    console.log(articleText);
-                    document.querySelector("article > section:nth-child(2)").innerHTML = articleText;
-                }
                 break;
             }
     }
