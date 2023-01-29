@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.8.1
+// @version      0.8.2
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -96,15 +96,15 @@
                 if(location.href.endsWith("?outputType=valid_amp")) {
                     location.href = location.href.replace("?outputType=valid_amp","");
                 }
-                if (document.querySelector('header > div > div > [class^="Textstyled__Text-"]')){
-                    GM.addStyle(".h2-pw {font-family: 'DIN Next LT Pro', Arial, Roboto, sans-serif; font-weight:700; letter-spacing:-0.25px; font-size:22px; line-height:26px;}");
-                    GM.addStyle(".space-pw {padding-bottom:4px; padding-top:8px;}");
-                    GM.addStyle(".location-pw {font-family: Inter,Arial,Roboto,sans-serif; font-size: 16px; font-weight: 600;}");
+                var paywall = document.querySelector('div.paywalledContent');
+                if (paywall){
                     GM.addStyle('[class^="ArticleContentLoaderstyled__Gradient-"],[id^="piano-lightbox-article-"],article > svg {display:none;}');
+                    GM.addStyle(".h2-pw {font-family: 'DIN Next LT Pro', Arial, Roboto, sans-serif; font-weight:700; letter-spacing:-0.25px; font-size:22px; padding-bottom:4px;}");
+                    paywall.classList.remove(paywall.classList.item(1));
+                    var articleParagraph = paywall.querySelector("div:not([class]) > p");
                     jsonText = document.querySelector("#fusion-metadata").innerHTML.split(/;Fusion\.globalContent.*?=/)[1];
                     jsonObj = JSON.parse(jsonText);
                     var elements = jsonObj.elements.filter(i => i.type != "ad");
-                    locationText = jsonObj?.location != null && jsonObj.location != "" ? `<span class="location-pw">${jsonObj.location}.</span> ` : "";
                     var readAlsoIndex = elements.findIndex(i => i.text?.includes("Lesen Sie auch"));
                     if (readAlsoIndex != -1)
                         elements.splice(readAlsoIndex, 2);
@@ -114,10 +114,9 @@
                     appAdIndex = elements.findIndex(i => i.text?.match(/Laden Sie sich jetzt hier kostenfrei unsere .*-App.* herunter[^:]/));
                     if (appAdIndex != -1)
                         elements.splice(appAdIndex, 3);
-                    articleText = locationText + elements.map(i => (i.type=="header"?'<h2 class="h2-pw">':"") + (i.text??"") + (i.type == "header"?"</h2>":"") + (i.type == "image"?`<div><img alt="${i.imageInfo?.alt}" src="${i.imageInfo?.src}" width="100%"><div class=""><p class="ClTDP">${i.imageInfo?.caption}</p><p class="bIdZuO">${i.imageInfo?.credit}</p></div></div>`:"") + (i.type == "list"?"<ul>" + i.list?.items?.map(l => "<li>• " + l.text + "</li>").join("") + "</ul>":"")).join('</p><p class="space-pw">');
+                    articleText = [{text: articleParagraph.innerHTML},...elements.slice(1)].map(i => (i.type=="header"?`<h2 class="h2-pw ${articleParagraph.className}">`:`<p class="${articleParagraph.className}">`) + (i.text??"") + (i.type == "header"?"</h2>":"</p>") + (i.type == "image"?`<div><img alt="${i.imageInfo?.alt}" src="${i.imageInfo?.src}" width="100%"><div class=""><p class="ClTDP">${i.imageInfo?.caption}</p><p class="bIdZuO">${i.imageInfo?.credit}</p></div></div>`:"") + (i.type == "list"?"<ul>" + i.list?.items?.map(l => "<li>• " + l.text + "</li>").join("") + "</ul>":"")).join("");
                     console.log(articleText);
-                    document.querySelector("header > div > div > p").innerHTML = articleText;
-                    document.querySelector('[class^="ArticleHeadstyled__ArticleTeaserContainer-"]').style.height = "100%";
+                    articleParagraph.parentElement.innerHTML = articleText;
                 }
                 break;
             }
