@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.5
+// @version      1.3.6
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -321,7 +321,7 @@
     async function ladeFilmografie(imdbid){
         var imdbRequest = await GM.xmlHttpRequest({
             method: "GET",
-            url: `https://www.imdb.com/name/${imdbid}/`,
+            url: `https://www.imdb.com/name/${imdbid}/fullcredits`,
             onload: function(response) {
                 return response;
             }

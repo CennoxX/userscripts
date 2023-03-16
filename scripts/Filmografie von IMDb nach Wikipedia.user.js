@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      2.2.7
+// @version      2.2.8
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -25,6 +25,12 @@
 (function(){
     'use strict';
     unsafeWindow.ladeFilmografie = function(occupation='actor,#filmo-head-actress', showShort=true, episodeLabel='Folge', showAlert=false){
+        if (!location.href.endsWith("fullcredits")){
+            var pageLink = location.href + "fullcredits";
+            alert("Öffne die Seite " + pageLink + ". Bitte das Script dort ausführen.");
+            location.href = pageLink;
+            return;
+        }
         var workSection = document.querySelector('#filmo-head-' + occupation);
         if (!workSection){
             alert('Keine Schauspiel-Filmografie vorhanden. Lädt stattdessen ersten möglichen Filmografie-Abschnitt.');
@@ -350,9 +356,13 @@
     GM.registerMenuCommand('Filmografie laden',() => {
         unsafeWindow.ladeFilmografie(undefined, undefined, undefined, true);
     },'f');
-
-    console.log('Um die Filmografie mit Standardeinstellungen zu laden, genügt ein Klick im Menü des Userscripts auf "Filmografie laden".\n'+
-                'Die Filmografie kann in der Console mit erweiterten Einstellungen in der Form "ladeFilmografie(occupation, showShort, episodeLabel);" aufgerufen werden.\n'+
-                'Dabei steht "episodeLabel" für die verwendete Bezeichnung "Folge" oder "Episode" und "showShort" dafür, ob Kurzfilme aufgeführt werden sollen oder nicht (true oder false).\n'+
-                'Mit "occupation" können andere Filmografien als Schauspiel-Filmografien ausgegeben werden, dazu ist zum Beispiel "writer", "director" oder "producer" anzugeben.');
+    if (location.href.endsWith("fullcredits")){
+        console.log('Um die Filmografie mit Standardeinstellungen zu laden, genügt ein Klick im Menü des Userscripts auf "Filmografie laden".\n'+
+                    'Die Filmografie kann in der Console mit erweiterten Einstellungen in der Form "ladeFilmografie(occupation, showShort, episodeLabel);" aufgerufen werden.\n'+
+                    'Dabei steht "episodeLabel" für die verwendete Bezeichnung "Folge" oder "Episode" und "showShort" dafür, ob Kurzfilme aufgeführt werden sollen oder nicht (true oder false).\n'+
+                    'Mit "occupation" können andere Filmografien als Schauspiel-Filmografien ausgegeben werden, dazu ist zum Beispiel "writer", "director" oder "producer" anzugeben.');
+    }
+    else{
+        console.log("Um die Filmografie zu laden, öffne eine Personenseite mit angehangenem \"fullcredits\" und führe das Script dort aus.");
+    }
 })();
