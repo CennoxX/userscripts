@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      2.2.8
+// @version      2.2.9
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -26,7 +26,7 @@
     'use strict';
     unsafeWindow.ladeFilmografie = function(occupation='actor,#filmo-head-actress', showShort=true, episodeLabel='Folge', showAlert=false){
         if (!location.href.endsWith("fullcredits")){
-            var pageLink = location.href + "fullcredits";
+            var pageLink = location.origin + location.pathname + "fullcredits";
             alert("Öffne die Seite " + pageLink + ". Bitte das Script dort ausführen.");
             location.href = pageLink;
             return;
