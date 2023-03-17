@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.9.7
+// @version      0.10.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -43,7 +43,11 @@
                 articletext = articletext.replace(sub, subtext);
             }
         }
-        var wikibaseId = Object.values(data.query.pages)[0].pageprops.wikibase_item;
+        var wikibaseId = Object.values(data.query.pages)[0].pageprops?.wikibase_item;
+        if (wikibaseId == null){
+            console.error("The item for this Wikipedia article doesn't exist at Wikidata, please create it first.");
+            return;
+        }
         response = await GM.xmlHttpRequest({
             method: "GET",
             url: `https://www.wikidata.org/w/api.php?action=wbgetentities&props=claims&sitefilter=dewiki&ids=${wikibaseId}&format=json`,
@@ -126,6 +130,7 @@
                 "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
                 "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *(?:\n|\|)")??i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber2\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
                 "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,"").split(/\[\[.*\||\[\[|\]\]/g).join("").trim().replace(/{{'-}}/g,"'").replace(/{{visible anchor\|(.*)}}/g,"$1").replace(/^(.*?)(?=[^\dXVI]{2}.) ?[,:\-–]? \(?(?:part )?([\dXVI]+)\)?/i,"$1, part $2"),
+                "SL": ((i.match("Title *= *(\.+) *(?:\n|\|)")??["",""])[1].match(new RegExp(wikilinks.map(i => i.split("|")[0].replace(/(\(|\))/g,"\\$1")).join("|"),"g"))??[""])[0],
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
                 "DRB": [...new Set([...[...(i.matchAll("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
@@ -217,6 +222,10 @@ LAST	Len	"${ep.OT}"
 `;
                 if (ep.hasOwnProperty("DT")){
                     epText += `LAST	Lde	"${ep.DT}"
+`;
+                }
+                if (ep.SL != ""){
+                    epText += `LAST	Senwiki	"${ep.SL}"
 `;
                 }
                 epText +=`LAST	Den	"episode of ${seriesEn}"
