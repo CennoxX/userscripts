@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.10.0
+// @version      0.10.1
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -129,7 +129,7 @@
             return {
                 "NR_GES": (i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber\n",i),prompt("EpisodeNumber\n"+i.match("EpisodeNumber.*\n"))??0)])[1],
                 "NR_ST": (i.match("EpisodeNumber2 *= *(\\d+) *(?:\n|\|)")??i.match("EpisodeNumber *= *(\\d+) *(?:\n|\|)")??["",(console.error("EpisodeNumber2\n",i),prompt("EpisodeNumber2\n"+i.match("EpisodeNumber2.*\n"))??0)])[1],
-                "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,"").split(/\[\[.*\||\[\[|\]\]/g).join("").trim().replace(/{{'-}}/g,"'").replace(/{{visible anchor\|(.*)}}/g,"$1").replace(/^(.*?)(?=[^\dXVI]{2}.) ?[,:\-–]? \(?(?:part )?([\dXVI]+)\)?/i,"$1, part $2"),
+                "OT": (i.match("Title *= *(\.+) *(?:\n|\|)")??["",(console.error("Title\n",i),prompt("Title\n"+i.match("Title.*\n")))])[1].replace(/<!--.*?-->/i,"").split(/\[\[.*\||\[\[|\]\]/g).join("").trim().replace(/{{'-}}/g,"'").replace(/{{visible anchor\|(.*)}}/g,"$1").replace(/^(.*?)(?=[^\dXVI]{2}.) ?[,:\-–]? \(?(?:part )?([\dXVI]+)\)?/i,"$1, part $2").replace(/{{va\|(?:.*\|)?(.*)}}/, "$1"),
                 "SL": ((i.match("Title *= *(\.+) *(?:\n|\|)")??["",""])[1].match(new RegExp(wikilinks.map(i => i.split("|")[0].replace(/(\(|\))/g,"\\$1")).join("|"),"g"))??[""])[0],
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0].split("|")[0]))],
