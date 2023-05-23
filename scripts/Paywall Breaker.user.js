@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paywall Breaker
 // @name:de      Paywall Breaker
-// @version      0.8.2
+// @version      0.8.3
 // @description  Removes paywalls from news sites
 // @description:de Entfernt Paywalls von Nachrichtenseiten
 // @author       CennoxX
@@ -136,6 +136,7 @@
             document.querySelector(".storyElementWrapper__paywall > div").style.display = "none";
             document.querySelector(".storyElementWrapper__paywallContainer").classList.remove("storyElementWrapper__paywallContainer");
             document.querySelector(".storyElementWrapper__paywall").classList.replace("storyElementWrapper__paywall","storyElementWrapper");
+            document.querySelector(".storyElementWrapper__paywallWrapper").classList.replace("storyElementWrapper__paywallWrapper","storyElementWrapper");
             document.querySelector(".storyElementWrapper__paywallStoryline").classList.replace("storyElementWrapper__paywallStoryline","storyElementWrapper__Storyline");
             site = await fetch(location.href);
             html = await site.text();
@@ -154,7 +155,7 @@
             paragraphs.forEach((p,i) => {
                 var cursor = 0;
                 var source = p.innerHTML;
-                if (i == 0){
+                if (i == 0 && source.indexOf(".") > 0 && source.indexOf(".") < 20){
                     [locationText, source] = source.split(/\. (.*)/s).filter(i => i);
                 }
                 var splittedSource = source.split(/(<.*?>)/);
@@ -168,7 +169,7 @@
                     replaceTexts.push(splittedText);
                 }
                 replaceText = replaceTexts.join("");
-                if (i == 0 && location.href.split("/")[3] == "lokales"){
+                if (locationText != null && location.href.split("/")[3] == "lokales"){
                     var locationLinkText = document.querySelector(".storyPage__sectionLink").innerText;
                     if (locationText.length == locationLinkText.length){
                         replaceText = `${locationLinkText}. ${replaceText}`;
