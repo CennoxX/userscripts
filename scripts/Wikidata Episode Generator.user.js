@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.10.2
+// @version      0.10.3
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -284,7 +284,7 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
         GM.setClipboard(output);
     }
     function getDate(episodeDate){
-        var result = episodeDate.replace(/{{start date(?:\|[md]f=y(?:es)?)?\|(\d+)\|(\d+)\|(\d+)(?:\|[md]f=y(?:es)?)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
+        var result = episodeDate.replace(/{{start date ?(?:\|[md]f=y(?:es)?)?\|(\d+) ?\|(\d+) ?\|(\d+) ?(?:\|[md]f=y(?:es)?)?}}.*/i,"$1-$2-$3").replace(/-(\d)\b/g,"-0$1");
         if (!/[1-2][09]\d\d-[0-1]\d-[0-3]\d/.test(result)){
             console.error("OriginalAirDate",episodeDate);
         }
@@ -528,7 +528,7 @@ IMDb-ID from IMDb: #${matchedEp.nr} ${matchedEp.title}`;
         };
     };
     async function GetWikipediaLinks(episodes){
-        console.log("loading Wikipedia article links from Wikidata…");
+        console.log("loading Wikidata items from Wikipedia links…");
         var cachedLinks = [];
         for (var ep of episodes){
             ep.DRBid = [];
@@ -559,10 +559,8 @@ IMDb-ID from IMDb: #${matchedEp.nr} ${matchedEp.title}`;
                     }
                 }
             };
-            if (ep.OT.match(/\[\[.*\]\]/) != null && !ep.hasOwnProperty("OTid")){
-                var ot = ep.OT.match(/\[\[(.*)\]\]/)[1];
-                ot = ot.replace(/\|.*/,"");
-                response = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${encodeURIComponent(ot)}&format=json`);
+            if (ep.SL != ""){
+                response = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${encodeURIComponent(ep.SL)}&format=json`);
                 data = await response.json();
                 if (Object.values(data.query.pages)[0].pageprops != null){
                     ep.OTid = Object.values(data.query.pages)[0].pageprops.wikibase_item;
