@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.3.6
+// @version      1.4.0
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -23,7 +23,7 @@
 
 (async()=>{
     "use strict";
-    if (!document.title.includes("“ – Erstellen")){
+    if (mw.config.get("wgAction") != "edit" || mw.config.get("wgArticleId") != 0 || mw.config.get("wgNamespaceNumber") != 0){
         return
     }
     var wikiText = "";
@@ -269,7 +269,7 @@
         return items.slice(0, -1).join(", ")+(items.length!=1?" und ":"")+items.slice(-1);
     }
     async function getWikidataIdFromPrompt(){
-        let articleTitle = document.title.match("„(.*?)( \\(.*)?“")[1];
+        let articleTitle = mw.config.get("wgTitle");
         let searchRequest = await GM.xmlHttpRequest({
             method: "GET",
             url: "https://www.wikidata.org/w/api.php?action=query&format=json&list=search&srlimit=5&srsearch=" + articleTitle,
