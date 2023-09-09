@@ -112,49 +112,6 @@ To generate the episode items, open a Wikipedia article with an episode list. Af
 <!-- END ./docs/Wikidata Episode Generator.md -->
 
 </details>
-
-###### [Paywall Breaker](https://greasyfork.org/de/scripts/446773-paywall-breaker/)
-Removes paywalls from news sites
-
-<details>
-<summary>details</summary>
-
-<!-- START ./docs/Paywall Breaker.md -->
-This script removes paywalls from some news sites. As far as possible the formatting is kept.
-
-Supported pages:
-* allgemeine-zeitung.de
-* cz.de
-* dnn.de
-* echo-online.de
-* goettinger-tageblatt.de
-* haz.de
-* hochheimer-zeitung.de
-* kn-online.de
-* ksta.de
-* lauterbacher-anzeiger.de
-* ln-online.de
-* lvz.de
-* main-spitze.de
-* maz-online.de
-* mittelhessen.de
-* neuepresse.de
-* oberhessische-zeitung.de
-* op-marburg.de
-* ostsee-zeitung.de
-* paz-online.de
-* rnd.de
-* rundschau-online.de
-* siegener-zeitung.de
-* sn-online.de
-* waz-online.de
-* wiesbadener-kurier.de
-* wormser-zeitung.de
-
-<!-- END ./docs/Paywall Breaker.md -->
-
-</details>
-
 ### deutsche Scripte
 ##### [Gmail Calender Connector](https://greasyfork.org/scripts/33508-gmail-calender-connector/)
 Füllt bei Anlage eines Kalendereintrages aus einer E-Mail heraus automatisch Datum und Uhrzeit aus
