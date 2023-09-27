@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Get label from Fernsehserien.de
-// @version      0.7.4
+// @version      0.7.5
 // @description  Offers Fernsehserien.de labels based on the episode number or title as Wikidata label
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -249,19 +249,19 @@
             })
                 .done(function (data){
                 if (data.hasOwnProperty("error")){
-                    mw.notify("API Error" + JSON.stringify(data), {title: "add label", tag: "fs"});
+                    mw.notify("API Error" + JSON.stringify(data), {title: "Bezeichnung hinzufügen", tag: "fs"});
                     $("#green-box").empty();
                     $("#red-box").empty();
                     $("#red-box").append(data.error.info.replace(/\n/g, " "));
                 } else {
                     $("#green-box").empty();
                     $("#green-box").append(summary);
-                    mw.notify("sent", {title: "add label", tag: "fs"});
+                    mw.notify("Änderung speichern …", {title: "Bezeichnung hinzufügen", tag: "fs"});
                     window.location.reload(true);
                 }
             })
                 .fail(function (){
-                mw.notify("API Error", {title: "add label", tag: "fs"});
+                mw.notify("API Error", {title: "Bezeichnung hinzufügen", tag: "fs"});
                 $("#green-box").empty();
                 $("#red-box").empty();
                 $("#red-box").append("API Error");
