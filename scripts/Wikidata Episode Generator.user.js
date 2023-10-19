@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.10.4
+// @version      0.11.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -144,6 +144,7 @@
         var source = `S143	Q328	S4656	"https://en.wikipedia.org/w/index.php?title=${articleName}&oldid=${version.revid}"`;
         var output = "";
         var lastEA = "";
+        var lastEp = "";
         var seasonMissing = false;
         episodes.forEach(i => {
             if (i.ST){
@@ -270,7 +271,13 @@ LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}
                     epText = epText.replace(/LAST\sDen.*\nLAST\sDde.*\nLAST\sDnl.*\n/, "");
                     epText = epText.replace(/(CREATE\n)?LAST/g, ep.OTid);
                     epText = epText.replace(/\tS4656\t.*/g, "");
+                    if (lastEp){
+                        epText = `${lastEp}	P156	${ep.OTid}
+${epText}${ep.OTid}	P155	${lastEp}
+`;
+                    }
                 }
+                lastEp = ep.OTid;
                 if (epText.match(/\bundefined\b/))
                     console.error("episode includes undefined value\n", epText);
                 output += epText;
