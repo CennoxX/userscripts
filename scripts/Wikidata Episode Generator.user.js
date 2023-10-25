@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.12.0
+// @version      0.12.1
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -35,7 +35,7 @@
         var articletext = version.slots.main.content;
         var subArticles = articletext.match(/{{:(.*)}}/g);
         if (subArticles != null){
-            console.log("loading sub articles from Wikipedia…");
+            console.log("Loading sub articles from Wikipedia…");
             for (var sub of subArticles){
                 response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${encodeURIComponent(sub.replace(/{{:|}}/g,""))}&rvslots=*&rvprop=content|ids&formatversion=2&format=json`);
                 var subData = await response.json();
@@ -271,14 +271,14 @@ LAST	P1113	${ep.NR_ST}	${source}
                     epText += `LAST	P345	"${ep.imdb}"\n`;
                 if (ep.hasOwnProperty("qid")){
                     epText = epText.replace(/(CREATE\n)?LAST/g, ep.qid).replace(/CREATE\n/g, '');
-                    if (lastEp){
-                        if (!ep.hasOwnProperty("P156") && !ep.hasOwnProperty("P179P156"))
-                            epText = `${lastEp}	P156	${ep.qid}	${source}\n${epText}`;
+                    if (lastEp.hasOwnProperty("qid")){
+                        if (!lastEp.hasOwnProperty("P156") && !lastEp.hasOwnProperty("P179P156"))
+                            epText = `${lastEp.qid}	P156	${ep.qid}	${source}\n${epText}`;
                         if (!ep.hasOwnProperty("P155") && !ep.hasOwnProperty("P179P155"))
-                            epText += `${ep.qid}	P155	${lastEp}	${source}\n`;
+                            epText += `${ep.qid}	P155	${lastEp.qid}	${source}\n`;
                     }
                 }
-                lastEp = ep.qid;
+                lastEp = ep;
                 if (epText.match(/\bundefined\b/))
                     console.error("episode includes undefined value\n", epText);
                 output += epText;
@@ -287,8 +287,9 @@ LAST	P1113	${ep.NR_ST}	${source}
         if (!jsonObj.claims.hasOwnProperty("P5327") && fsId)
             output += `${seriesId}	P5327	"${fsId}"
 `;
-        console.log(output);
-        console.warn("Please check all QuickStatements for correctness before execution at https://quickstatements.toolforge.org/#/batch.");
+        if (output)
+            console.log(output);
+        console.warn(output ? "Please check all QuickStatements for correctness before execution at https://quickstatements.toolforge.org/#/batch." : "No missing QuickStatements found.");
         GM.setClipboard(output);
     }
     function getDate(episodeDate){
@@ -356,7 +357,7 @@ LAST	P1113	${ep.NR_ST}	${source}
         return await resp.json();
     }
     async function GetEpisodeItems(qid, episodes){
-        console.log("loading episode items from Wikidata…");
+        console.log("Loading episode items from Wikidata…");
         var request = `SELECT ?qid ?seasonNr ?Len ?Lde ?Den ?Dde ?Dnl ?Senwiki (GROUP_CONCAT(DISTINCT REPLACE(STR(?P57all), ".*/", ""); SEPARATOR = "|") AS ?P57) (GROUP_CONCAT(DISTINCT REPLACE(STR(?P58all), ".*/", ""); SEPARATOR = "|") AS ?P58) (MIN(?P155all) AS ?P155) (MIN(?P156all) AS ?P156) ?P179P155 ?P179P156 ?P179P1545 ?P345 ?P364 ?P449 ?P495 (MIN(?P577all) AS ?P577) ?P577P291 ?P1476 ?P2364 ?P4908P1545 WHERE {
   BIND(wd:${qid} AS ?series)
   ?pSeries ps:P179 ?series.
@@ -455,7 +456,7 @@ Wikidata-ID from Wikidata: #${ep.P179P1545.value} / ${epNr} ${ep.Len.value}`
         };
     }
     async function GetSeasonItems(qid){
-        console.log("loading season items from Wikidata…");
+        console.log("Loading season items from Wikidata…");
         var request = `SELECT ?quickstatements WHERE {
   BIND(wd:${qid} AS ?series)
   ?qid wdt:P31 wd:Q3464665;
@@ -585,42 +586,43 @@ IMDb-ID from IMDb: #${matchedEp.nr} ${matchedEp.title}`;
         };
     };
     async function GetWikipediaLinks(episodes){
-        console.log("loading Wikidata items from Wikipedia links…");
+        console.log("Loading Wikidata items from Wikipedia links…");
         var cachedLinks = [];
+        var cachedRequests = episodes.flatMap((i) => [
+            ...i.DRB,
+            ...i.REG,
+            ...(i.SL ? [i.SL] : []),
+        ]).map(i => encodeURIComponent(i)).join('|');
+        var parts = cachedRequests.match(/(?:[^|]+\|){0,49}[^|]+/g);
+        for(let part of parts){
+            var cachedRequestsResponse = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${part}&format=json`);
+            var { query: { redirects, pages } } = await cachedRequestsResponse.json();
+            cachedLinks.push(...Object.values(pages).map(({ title, pageprops: { wikibase_item: qid } }) => ({
+                name: redirects?.find(({ from }) => from === title)?.to || title,
+                qid,
+            })));
+        }
+        cachedLinks = [...new Set(cachedLinks)];
         for (var ep of episodes){
             ep.DRBid = [];
             ep.REGid = [];
             for (let drb of ep.DRB){
-                var cachedDRB = cachedLinks.filter(i => i.name == drb);
-                if (cachedDRB.length != 0){
-                    ep.DRBid.push(cachedDRB[0].qid);
-                }else{
-                    var response = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${encodeURIComponent(drb)}&format=json`);
-                    var data = await response.json();
-                    if (Object.values(data.query.pages)[0].pageprops != null){
-                        ep.DRBid.push(Object.values(data.query.pages)[0].pageprops.wikibase_item);
-                        cachedLinks.push({"name":drb,"qid":Object.values(data.query.pages)[0].pageprops.wikibase_item});
-                    }
+                var cachedDRB = cachedLinks.find(i => i.name == drb);
+                if (cachedDRB){
+                    ep.DRBid.push(cachedDRB.qid);
                 }
             };
             for (let reg of ep.REG){
-                var cachedREG = cachedLinks.filter(i => i.name == reg);
-                if (cachedREG.length != 0){
-                    ep.REGid.push(cachedREG[0].qid);
-                }else{
-                    response = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${encodeURIComponent(reg)}&format=json`);
-                    data = await response.json();
-                    if (Object.values(data.query.pages)[0].pageprops != null){
-                        ep.REGid.push(Object.values(data.query.pages)[0].pageprops.wikibase_item);
-                        cachedLinks.push({"name":reg,"qid":Object.values(data.query.pages)[0].pageprops.wikibase_item});
-                    }
+                var cachedREG = cachedLinks.find(i => i.name == reg);
+                if (cachedREG){
+                    ep.REGid.push(cachedREG.qid);
                 }
             };
             if (ep.SL != ""){
-                response = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${encodeURIComponent(ep.SL)}&format=json`);
-                data = await response.json();
-                if (Object.values(data.query.pages)[0].pageprops != null){
-                    ep.qid = Object.values(data.query.pages)[0].pageprops.wikibase_item;
+                let epSL = ep.SL;
+                var cachedSL = cachedLinks.find(i => i.name == epSL);
+                if (cachedSL){
+                    ep.qid = cachedSL.qid;
                 }
             };
         }
