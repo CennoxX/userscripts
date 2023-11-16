@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.12.1
+// @version      0.13.0
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -21,6 +21,7 @@
 /* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
 /* eslint no-return-assign: "off" */
 /* eslint curly: "off" */
+/* globals jQuery, $, mw */
 
 (function() {
     "use strict";
@@ -28,20 +29,19 @@
     GM.registerMenuCommand("Generate episode items for Wikidata", generateEpisodes, "w");
     async function generateEpisodes(){
         console.clear();
-        var article = document.title.split(" – Wikipedia")[0];
+        var article = mw.config.get("wgTitle");
         var response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${encodeURIComponent(article)}&rvslots=*&rvprop=content|ids&formatversion=2&format=json`);
         var data = await response.json();
         var version = Object.values(data.query.pages)[0].revisions[0];
-        var articletext = version.slots.main.content;
-        var subArticles = articletext.match(/{{:(.*)}}/g);
+        var articleText = version.slots.main.content;
+        var subArticles = articleText.match(/{{:(.*)}}/g);
         if (subArticles != null){
             console.log("Loading sub articles from Wikipedia…");
-            for (var sub of subArticles){
-                response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${encodeURIComponent(sub.replace(/{{:|}}/g,""))}&rvslots=*&rvprop=content|ids&formatversion=2&format=json`);
-                var subData = await response.json();
-                var subtext = Object.values(subData.query.pages)[0].revisions[0].slots.main.content;
-                articletext = articletext.replace(sub, subtext);
-            }
+            var sub = subArticles.map(i => encodeURIComponent(i.replace(/{{:|}}/g,""))).join("|");
+            response = await fetch(`/w/api.php?action=query&prop=revisions|pageprops&titles=${sub}&rvslots=*&rvprop=content|ids&formatversion=2&format=json`);
+            var subData = await response.json();
+            var subtexts = Object.values(subData.query.pages);
+            subtexts.forEach(i => {articleText = articleText.replace(i.title, i.revisions[0].slots.main.content);});
         }
         var wikibaseId = Object.values(data.query.pages)[0].pageprops?.wikibase_item;
         if (wikibaseId == null){
@@ -101,8 +101,8 @@
         }
         var wikilinks = [];
         var plainlinks = [];
-        var eps = articletext.split(/{{(?:#invoke:)?Episode list.*\n|==+ *Season (\d+) |== ?(Special)s?(?: episodes?|: [^=]+)? ?(?:\((?:19|20)\d\d(?:[-–](?:19|20)?\d\d)?\))? ?==/i).filter(i => i).map(i => i.split(/\n}}\n/)[0]).slice(1);
-        if (articletext.match(/== *Season \d+ /i)){
+        var eps = articleText.split(/{{(?:#invoke:)?Episode list.*\n|==+ *Season (\d+) |== ?(Special)s?(?: episodes?|: [^=]+)? ?(?:\((?:19|20)\d\d(?:[-–](?:19|20)?\d\d)?\))? ?==/i).filter(i => i).map(i => i.split(/\n}}\n/)[0]).slice(1);
+        if (articleText.match(/== *Season \d+ /i)){
             var tempSeason = 0;
             eps.forEach((e,i) => {
                 if (Number(e) || e.toLowerCase() == "special"){
@@ -114,13 +114,34 @@
             });
             eps = eps.filter(i => !Number(i) && i.toLowerCase() != "special" && !i.match(/Season *= *Special *$/i));
         }
-        for (var doubleEpText of eps.filter(i => i.match(/=.*<hr ?\/?>.*\n/))){
-            var doubleEpIndex = eps.indexOf(doubleEpText);
-            doubleEpText = doubleEpText.replace(/(Title *= )\[\[.*\|(.*)\]\]/igm,"$1$2");
-            doubleEpText = doubleEpText.replace(/(Title *= )\[\[(.*)\]\]/igm,"$1$2");
-            eps.splice(doubleEpIndex, 0, doubleEpText.replace(/<hr ?\/?>.*/g,"").replace(/(Title *= *.*)/ig,"$1, part 1"));
-            eps[++doubleEpIndex]=doubleEpText.replace(/=.*<hr ?\/?>/g,"=").replace(/(Title *= *.*)/ig,"$1, part 2");
-        }
+        eps = eps.flatMap(episode => {
+            var lines = episode.split('\n');
+            var numParts = lines.find(line => line.startsWith('| NumParts'))?.split('=')[1]?.trim();
+            if (numParts) {
+                var newEpisodes = [];
+                for (let i = 1; i <= parseInt(numParts); i++) {
+                    var firstNumberLine = true;
+                    var firstNumberLine_2 = true;
+                    var newEpisode = lines.map(line => {
+                        if (line.startsWith("| EpisodeNumber_") && firstNumberLine) {
+                            firstNumberLine = false;
+                            return "| EpisodeNumber = " + lines.find(l => l.startsWith("| EpisodeNumber_" + i)).split("=")[1].trim();
+                        } else if (line.startsWith("| EpisodeNumber2") && firstNumberLine_2) {
+                            firstNumberLine_2 = false;
+                            return "| EpisodeNumber2 = " + lines.find(l => l.startsWith("| EpisodeNumber2_" + i)).split("=")[1].trim();
+                        } else if (line.startsWith("| Title")) {
+                            return "| Title = " + line.split("=")[1].trim() + ", part " + i;
+                        } else if (!line.startsWith("| EpisodeNumber_") && !line.startsWith("| EpisodeNumber2_") && !line.startsWith("| NumParts")) {
+                            return line;
+                        }
+                    }).filter(Boolean).join("\n");
+                    newEpisodes.push(newEpisode);
+                }
+                return newEpisodes;
+            } else {
+                return episode;
+            }
+        });
         var episodes = eps.map(i => {
             wikilinks = wikilinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1]));
             plainlinks = plainlinks.concat([...i.matchAll(/\[\[(.*?)\]\]/g)].map(i => i[1].split("|")[1]??i[1]));
@@ -134,7 +155,7 @@
                 "EA": getDate((i.match("OriginalAirDate *= *(\.+) *(?:\n|\|)")??["",(console.error("OriginalAirDate\n",i),"")])[1]),
                 "REG": [...new Set([...[...(i.matchAll("DirectedBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0]?.split("|")[0]))].filter(i => i),
                 "DRB": [...new Set([...[...(i.matchAll("WrittenBy_?1?2? *= *(\.+) *(?:\n|\|)"))].map(i => i[1]).join(" ").matchAll(new RegExp(plainlinks.join("|"),"g"))].map(i => i[0]).filter(i => i != "").map(p => wikilinks.filter(w => (w.split("|")[1]??w) == p)[0]?.split("|")[0]))].filter(i => i),
-                "PROD": (i.match("ProdCode *= *(.*) *(?:\n|\|)")??["",""])[1],
+                "PROD": (i.match("ProdCode *= *(.*) *(?:\n|\|)")??["",""])[1].split("<ref")[0],
                 "ST": (i.match(/Season *= *(\d+) *$/)??["",""])[1],
             };
         });
@@ -157,7 +178,7 @@
             seasonMissing = (seasonId != -1 && seasons && !seasons[i.season]);
         });
 
-        await GetEpisodeItems(seriesId, episodes);
+        await GetEpisodeItems(seriesId, episodes, originalCountryId);
 
         if (!seasons || seasonMissing){
             var quickstatements = await GetSeasonItems(seriesId);
@@ -229,8 +250,6 @@ LAST	P1113	${ep.NR_ST}	${source}
                     epText +=`LAST	Den	"episode of ${seriesEn}"\n`;
                 if (!ep.hasOwnProperty("Dde"))
                     epText +=`LAST	Dde	"Folge von ${series}"\n`;
-                if (!ep.hasOwnProperty("Dnl"))
-                    epText +=`LAST	Dnl	"aflevering van ${seriesNl}"\n`;
                 if (!ep.hasOwnProperty("P179P1545"))
                     epText +=`LAST	P179	${seriesId}	P1545	"${ep.NR_GES}"	${source}\n`;
                 if (!ep.hasOwnProperty("P31"))
@@ -244,7 +263,7 @@ LAST	P1113	${ep.NR_ST}	${source}
                         console.error("season not found\n", ep);
                     }
                 }
-                if (!ep.hasOwnProperty("P577"))
+                if (!ep.hasOwnProperty("P577P291O"))
                     epText +=`LAST	P577	+${ep.EA}T00:00:00Z/11	P291	${originalCountryId}	${source}\n`;
                 if (!ep.hasOwnProperty("P449"))
                     epText +=`LAST	P449	${networkId}	${source}\n`;
@@ -356,9 +375,9 @@ LAST	P1113	${ep.NR_ST}	${source}
         });
         return await resp.json();
     }
-    async function GetEpisodeItems(qid, episodes){
+    async function GetEpisodeItems(qid, episodes, originalCountryId){
         console.log("Loading episode items from Wikidata…");
-        var request = `SELECT ?qid ?seasonNr ?Len ?Lde ?Den ?Dde ?Dnl ?Senwiki (GROUP_CONCAT(DISTINCT REPLACE(STR(?P57all), ".*/", ""); SEPARATOR = "|") AS ?P57) (GROUP_CONCAT(DISTINCT REPLACE(STR(?P58all), ".*/", ""); SEPARATOR = "|") AS ?P58) (MIN(?P155all) AS ?P155) (MIN(?P156all) AS ?P156) ?P179P155 ?P179P156 ?P179P1545 ?P345 ?P364 ?P449 ?P495 (MIN(?P577all) AS ?P577) ?P577P291 ?P1476 ?P2364 ?P4908P1545 WHERE {
+        var request = `SELECT ?qid ?seasonNr ?Len ?Lde ?Den ?Dde ?Dnl ?Senwiki (GROUP_CONCAT(DISTINCT REPLACE(STR(?P57all), ".*/", ""); SEPARATOR = "|") AS ?P57) (GROUP_CONCAT(DISTINCT REPLACE(STR(?P58all), ".*/", ""); SEPARATOR = "|") AS ?P58) (MIN(?P155all) AS ?P155) (MIN(?P156all) AS ?P156) ?P179P155 ?P179P156 ?P179P1545 ?P345 ?P364 ?P449 ?P495 ?P577P291 ?P577P291O ?P1476 ?P2364 ?P4908P1545 WHERE {
   BIND(wd:${qid} AS ?series)
   ?pSeries ps:P179 ?series.
   ?q wdt:P31 wd:Q21191270;
@@ -400,9 +419,14 @@ LAST	P1113	${ep.NR_ST}	${source}
   	pq:P291 wd:Q183.
   }
   OPTIONAL {
+	?q p:P577 _:3.
+	_:3 ps:P577 ?P577P291O;
+  	pq:P291 wd:${originalCountryId}.
+  }
+  OPTIONAL {
     ?Senwiki schema:about ?q;
       schema:isPartOf <https://en.wikipedia.org/>;
-      schema:name _:3.
+      schema:name _:4.
   }
   OPTIONAL { ?pSeries pq:P155 ?P179P155. }
   OPTIONAL { ?pSeries pq:P156 ?P179P156. }
@@ -410,7 +434,6 @@ LAST	P1113	${ep.NR_ST}	${source}
   OPTIONAL { ?q wdt:P58 ?P58all. }
   OPTIONAL { ?q wdt:P345 ?P345. }
   OPTIONAL { ?q wdt:P364 ?P364. }
-  OPTIONAL { ?q wdt:P577 ?P577all. }
   OPTIONAL { ?q wdt:P449 ?P449. }
   OPTIONAL { ?q wdt:P495 ?P495. }
   OPTIONAL { ?q wdt:P1476 ?P1476. }
@@ -420,7 +443,7 @@ LAST	P1113	${ep.NR_ST}	${source}
   BIND(REPLACE(STR(?q),".*/","") as ?qid).
   FILTER NOT EXISTS {?qid wdt:P1 wd:Q${new Date()%1000}.}
 }
-GROUP BY ?qid ?seasonNr ?Len ?Lde ?Den ?Dde ?Dnl ?Senwiki ?P179P155 ?P179P156 ?P179P1545 ?P345 ?P364 ?P449 ?P495 ?P577P291 ?P1476 ?P2364 ?P4908P1545`;
+GROUP BY ?qid ?seasonNr ?Len ?Lde ?Den ?Dde ?Dnl ?Senwiki ?P179P155 ?P179P156 ?P179P1545 ?P345 ?P364 ?P449 ?P495 ?P577P291 ?P577P291O ?P1476 ?P2364 ?P4908P1545`;
         var resp = await GetSparqlResponse(request);
         var sparqlEps = resp.results.bindings;
         for (let ep of sparqlEps){
@@ -550,8 +573,8 @@ data from Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matched
             });
             var parser = new DOMParser();
             var xmlDoc = parser.parseFromString(response.responseText,"text/html");
-            imdbIds = imdbIds.concat([...xmlDoc.querySelectorAll(".lister-item-header a:nth-child(5)")].map(i => {return {"title": i.innerText, "id": i.href.split("/")[4], "nr": i.parentElement.parentElement.querySelector(".text-primary").innerText.replace(".","")}}));
-            allEps = xmlDoc.querySelector(".desc>span").innerText.split(" ")[2];
+            imdbIds = imdbIds.concat([...xmlDoc.querySelectorAll(".ipc-metadata-list-summary-item .dli-ep-title")].map(i => {return {"title": i.innerText, "id": i.firstChild.href.split("/")[4], "nr": i.parentElement.parentElement.querySelector(".dli-title").innerText.split(".")[0]}}));
+            allEps = 250;
             startEp = startEp + 250;
         } while (imdbIds.length < allEps);
         for (var ep of episodes){
@@ -594,12 +617,12 @@ IMDb-ID from IMDb: #${matchedEp.nr} ${matchedEp.title}`;
             ...(i.SL ? [i.SL] : []),
         ]).map(i => encodeURIComponent(i)).join('|');
         var parts = cachedRequests.match(/(?:[^|]+\|){0,49}[^|]+/g);
-        for(let part of parts){
+        for (var part of parts){
             var cachedRequestsResponse = await fetch(`/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&titles=${part}&format=json`);
             var { query: { redirects, pages } } = await cachedRequestsResponse.json();
-            cachedLinks.push(...Object.values(pages).map(({ title, pageprops: { wikibase_item: qid } }) => ({
-                name: redirects?.find(({ from }) => from === title)?.to || title,
-                qid,
+            cachedLinks.push(...Object.values(pages).map(p => ({
+                name: redirects?.find(({ from }) => from === p.title)?.to || p.title,
+                qid: p.pageprops?.wikibase_item,
             })));
         }
         cachedLinks = [...new Set(cachedLinks)];
@@ -608,20 +631,20 @@ IMDb-ID from IMDb: #${matchedEp.nr} ${matchedEp.title}`;
             ep.REGid = [];
             for (let drb of ep.DRB){
                 var cachedDRB = cachedLinks.find(i => i.name == drb);
-                if (cachedDRB){
+                if (cachedDRB && cachedDRB.qid){
                     ep.DRBid.push(cachedDRB.qid);
                 }
             };
             for (let reg of ep.REG){
                 var cachedREG = cachedLinks.find(i => i.name == reg);
-                if (cachedREG){
+                if (cachedREG && cachedREG.qid){
                     ep.REGid.push(cachedREG.qid);
                 }
             };
             if (ep.SL != ""){
                 let epSL = ep.SL;
                 var cachedSL = cachedLinks.find(i => i.name == epSL);
-                if (cachedSL){
+                if (cachedSL && cachedSL.qid){
                     ep.qid = cachedSL.qid;
                 }
             };
