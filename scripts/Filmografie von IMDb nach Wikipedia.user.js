@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      2.3.0
+// @version      2.3.1
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -19,14 +19,12 @@
 // @noframes
 // ==/UserScript==
 /* jshint esversion: 10 */
-/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
-/* eslint curly: 'off' */
 
 (function(){
     'use strict';
     unsafeWindow.ladeFilmografie = function(occupation='actor,#filmo-head-actress', showShort=true, episodeLabel='Folge', showAlert=false){
-        if (!location.pathname.endsWith("fullcredits")){
-            var pageLink = location.origin + location.pathname + "fullcredits?ladeFilmografie";
+        if (!location.pathname.endsWith('fullcredits')){
+            var pageLink = location.origin + location.pathname + 'fullcredits?ladeFilmografie';
             location.href = pageLink;
             return;
         }
@@ -52,7 +50,7 @@
                 credit.yearTo = years[1]?years[1]:0;
                 credit.dt = w.querySelector('a').innerText.replace(' - ', ' – ').replace('...', '…');
                 var entry = w.innerHTML.split('</b>')[1];
-                var creditType = entry.split('<br>')[0].replace(/\)?\n\(voice/,'').trim();
+                var creditType = entry.split('<br>')[0].replace(/\)?\n\(voice/, '').trim();
                 if (creditType.includes('in_production') || creditType.includes('Video Game')){
                     return;
                 }
@@ -115,7 +113,7 @@
             var checkIfCompleted = setInterval(() => {
                 console.clear();
                 if (request === 0 || (done/request) != 1){
-                    console.log('requests:',done,'/',request);
+                    console.log('requests:', done, '/', request);
                 } else {
                     var formattedFilmography = '== Filmografie ==';
                     filmography.forEach(entry => {
@@ -187,7 +185,7 @@
                                     credit.dt = jsonObj.labels.de.value;
                                 }
                                 if (typeof jsonObj.claims.P1476 != 'undefined'){ //check if OT of entity exists
-                                    credit.ot = jsonObj.claims.P1476[0].mainsnak.datavalue.value.text.replace(/'/g,'’');
+                                    credit.ot = jsonObj.claims.P1476[0].mainsnak.datavalue.value.text.replace(/'/g, '’');
                                 } else {
                                     getDataFromEIDR(credit.imdbid);//get OT
                                 }
@@ -225,19 +223,19 @@
                             });
                             if (credit.imdbid == imdbid){ //get ot
                                 var ot;
-                                if (htmlText.indexOf('Original title: ') != -1){
-                                    ot = (/Original title: (.*?)<\/div/m).exec(htmlText)[1];
+                                if (htmlText.indexOf('Originaltitel: ') != -1){
+                                    ot = (/Originaltitel: (.*?)<\/div/m).exec(htmlText)[1];
                                 } else {
-                                    ot = (/<title>(.*?) \([^\(]*?<\/title>/m).exec(htmlText)[1];
+                                    ot = (/<title>(.*?) \([^(]*?<\/title>/m).exec(htmlText)[1];
                                 }
                                 var txt = document.createElement('textarea');
                                 txt.innerHTML = ot;
                                 ot = txt.value;
                                 credit.ot = ot.replace('...', '…').replace(' - ', ' – ');
                             } else if (credit.episodeName == imdbid){ //get episode name
-                                var episodeNumber = (/">S(\d+?)<!-- -->.<!-- -->E(\d+?)<\/div>/m).exec(htmlText);
+                                var episodeNumber = (/">S. (\d+?)<!-- -->.<!-- -->E. (\d+?)<\/div>/m).exec(htmlText);
                                 if (episodeNumber !== null && episodeNumber.length == 3){
-                                    credit.episodeName = episodeNumber[1]+'x'+(episodeNumber[2].length == 1?'0':'')+episodeNumber[2];
+                                    credit.episodeName = episodeNumber[1]+'x'+(episodeNumber[2].length == 1? '0' : '')+episodeNumber[2];
                                     credit.episodeid = imdbid;
                                     getItemFromWikidata(imdbid);
                                 } else {
@@ -339,9 +337,9 @@
                         }
                     }
                     if (this.voice){
-                        descriptionPart += (descriptionPart?', ':' (') + 'Sprechrolle';
+                        descriptionPart += (descriptionPart ? ', ' : ' (') + 'Sprechrolle';
                     }
-                    descriptionPart += descriptionPart?')':'';
+                    descriptionPart += descriptionPart ? ')' : '';
                     return descriptionPart;
                 };
                 this.toString = function(){
@@ -352,14 +350,14 @@
         return 'Filmografie lädt …';
     };
 
-    if (location.href.endsWith("fullcredits?ladeFilmografie")){
+    if (location.href.endsWith('fullcredits?ladeFilmografie')){
         unsafeWindow.ladeFilmografie(undefined, undefined, undefined, true);
     }
 
     GM.registerMenuCommand('Filmografie laden',() => {
         unsafeWindow.ladeFilmografie(undefined, undefined, undefined, true);
     },'f');
-    if (location.href.endsWith("fullcredits")){
+    if (location.href.endsWith('fullcredits')){
         console.log('Um die Filmografie mit Standardeinstellungen zu laden, genügt ein Klick im Menü des Userscripts auf "Filmografie laden".\n'+
                     'Die Filmografie kann in der Console mit erweiterten Einstellungen in der Form "ladeFilmografie(occupation, showShort, episodeLabel);" aufgerufen werden.\n'+
                     'Dabei steht "episodeLabel" für die verwendete Bezeichnung "Folge" oder "Episode" und "showShort" dafür, ob Kurzfilme aufgeführt werden sollen oder nicht (true oder false).\n'+
