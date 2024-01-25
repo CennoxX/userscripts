@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.4.0
+// @version      1.4.1
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -17,14 +17,12 @@
 // @license      MIT
 // ==/UserScript==
 /* jshint esversion: 10 */
-/* eslint quotes: ["warn", "double", {"avoidEscape": true}] */
-/* eslint curly: "off" */
-/* globals jQuery, $, mw */
+/* globals mw */
 
 (async()=>{
     "use strict";
     if (mw.config.get("wgAction") != "edit" || mw.config.get("wgArticleId") != 0 || mw.config.get("wgNamespaceNumber") != 0){
-        return
+        return;
     }
     var wikiText = "";
     var wikidataId = await getWikidataIdFromPrompt();
@@ -33,6 +31,7 @@
     wikiText = await getArticleFromSPARQL(wikidataId);
     wikiText = wikiText.replace(/\n\n\n+/g,"\n\n").replace(/  +/g," ");
     $("#wpTextbox1").textSelection("setContents", wikiText);
+
     //Filmografie
     let isFemale = false;
     let surname = "";
@@ -44,10 +43,8 @@
     let imdbid = getPropertyFromItem(wikiItem,"P345");
     if (imdbid != "")
     {
-        var syntaxButton;
-        if (syntaxButton = document.querySelector("#mw-editbutton-codemirror>a[aria-pressed='false']")){
-            syntaxButton.click()
-        }
+        var syntaxButton = document.querySelector("#mw-editbutton-codemirror>a[aria-pressed='false']");
+        syntaxButton?.click();
         isFemale = getPropertyFromItem(wikiItem,"P21").id == "Q6581072";
         surname = getPropFromItem(wikiItem,"labels").split(" ").pop();
         filmographyText = await ladeFilmografie(imdbid);
@@ -61,11 +58,11 @@
                     }
                     reloadCareerText();
                 }
-                var filmographyLineNumber = wikiText.substring(0, filmographyStart).split("\n").length + (creditList.length == 0?0:2);
+                var filmographyLineNumber = wikiText.substring(0, filmographyStart).split("\n").length + (creditList.length == 0 ? 0 : 2);
                 var lines = [...document.querySelectorAll(".CodeMirror-lines .noime div div div")];
-                lines.slice(filmographyLineNumber,filmography.length+filmographyLineNumber)
-                    .forEach(c => {c.innerHTML = "<input type='checkbox' onclick='checkboxes(" +Number(c.innerHTML - filmographyLineNumber - 1) + ")'/>"});
-                creditList.forEach(i => {lines[filmographyLineNumber+i].querySelector("input").checked=true});
+                lines.slice(filmographyLineNumber,filmography.length + filmographyLineNumber)
+                    .forEach(c => {c.innerHTML = "<input type='checkbox' onclick='checkboxes(" + Number(c.innerHTML - filmographyLineNumber - 1) + ")'/>"});
+                creditList.forEach(i => {lines[filmographyLineNumber + i].querySelector("input").checked = true});
             },100);
         };
         unsafeWindow.checkboxes(-1);
@@ -80,53 +77,54 @@
         elem.appendChild(span);
         span.addEventListener("click", () => reloadCareerText(false));
     }else{
-        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart-2, end: filmographyEnd});
+        $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart - 2, end: filmographyEnd});
         $("#wpTextbox1").textSelection("replaceSelection", "");
     }
     if (wikiText == ""){
         wikiText = "Fehler bei Artikelgenerierung.\nDas Script befindet sich derzeit in Entwicklung.\nZurzeit werden Biografien unterstützt, vor allem bei Schauspielerbiografien werden gute Ergebnisse erzielt.";
         $("#wpTextbox1").textSelection("setContents", wikiText);
     }
-    //methods
+
     function reloadCareerText(firstReload = false){
         filmographyText = getCareerText(filmography,isFemale,surname,firstReload);
-        filmographyText += filmographyText.length!=0?"\n\n":"";
+        filmographyText += filmographyText.length != 0 ? "\n\n" : "";
         $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart, end: filmographyEnd});
         $("#wpTextbox1").textSelection("replaceSelection", filmographyText);
         filmographyEnd = filmographyStart + filmographyText.length;
     }
+
     function getCareerText(filmography, isFemale, surname, firstReload = false){
-        filmography.forEach(i => {i.type=(i.type==""?"Film":i.type)});
+        filmography.forEach(i => {i.type = (i.type == "" ? "Film" : i.type)});
         let careerText = "";
         let careerTemplates = [
-            {"id": 0, get text() {return `${(isFemale?"Ihr":"Sein")} Debüt als Schauspieler${(isFemale?"in":"")} hatte ${(useName?surname:isFemale?"sie":"er")} ${yearText} in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": false, "multiple": false, "type": "serie"},
-            {"id": 1, get text() {return `${(isFemale?"Ihren":"Seinen")} ersten Auftritt absolvierte ${(useName?surname:isFemale?"sie":"er")} ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 2, get text() {return `${(useName?(surname+"s").replace(/ss$/,"s"):isFemale?"Ihr":"Sein")} erster Auftritt in einer ${credit.type} war ${yearText} in ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
-            {"id": 2, get text() {return `${(useName?(surname+"s").replace(/ss$/,"s"):isFemale?"Ihr":"Sein")} erster Auftritt in einem ${credit.type} war ${yearText} in ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "film"},
-            {"id": 3, get text() {return `${(useName?(surname+"s").replace(/ss$/,"s"):isFemale?"Ihre":"Seine")} erste wiederkehrende Rolle hatte ${(isFemale?"sie":"er")} ${yearText} in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": true, "multiple": true, "type": "serie"},
-            {"id": 4, get text() {return `${(useName?surname:isFemale?"Sie":"Er")} hatte ${yearText} mit einem Gastauftritt in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihr":"sein")} Fernsehdebüt.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
-            {"id": 5, get text() {return `${(useName?surname:isFemale?"Sie":"Er")} machte ${(isFemale?"ihr":"sein")} Fernsehdebüt ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 6, get text() {return `${(useName?surname:isFemale?"Sie":"Er")} spielte ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype?"erstmals ":"")}einen größeren Handlungsbogen.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
-            {"id": 7, get text() {return `${(useName?surname:isFemale?"Sie":"Er")} war ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 8, get text() {return `${yearText} erhielt ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste ${(credit.numberOfEpisodes > 1?"wiederkehrende ":"")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": true, "multiple": null, "type": "serie"},
-            {"id": 9, get text() {return `${yearText} erhielt ${(useName?surname:isFemale?"sie":"er")} eine Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": false, "multiple": false, "type": "serie"},
-            {"id": 10, get text() {return `${yearText} erhielt ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype?"erstmals ":"")}eine wiederkehrende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
-            {"id": 11, get text() {return `${yearText} erschien ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 12, get text() {return `${yearText} folgte ${(useName?surname:isFemale?"ihr":"sein")} Spielfilmdebüt in dem ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": true, "multiple": false, "type": "film"},
-            {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste ${(credit.numberOfEpisodes > 1?"wiederkehrende ":"")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": null, "debuttype": true, "multiple": null, "type": "serie"},
-            {"id": 13, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} ${(isFemale?"ihre":"seine")} erste Filmrolle in ''${credit.getTitlePart()}''.`;}, "debut": null, "debuttype": true, "multiple": false, "type": "film"},
-            {"id": 14, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} bei dem ${credit.type} ''${credit.getTitlePart()}'' ${debut?"erstmals ":""}eine Rolle inne.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
-            {"id": 15, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' eine Rolle inne.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in dem ${credit.type} ''${credit.getTitlePart()}'' ${debut?(isFemale?"ihren ":"seinen ")+"ersten":"einen"} Auftritt.`;}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
-            {"id": 16, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihren":"seinen")} ersten Fernsehauftritt.`;}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
-            {"id": 17, get text() {return `${yearText} hatte ${(useName?surname:isFemale?"sie":"er")} mit ${getEpisodeNumberText(credit.numberOfEpisodes)} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale?"ihr":"sein")} Fernsehdebüt.`;}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 18, get text() {return `${yearText} spielte ${(useName?surname:isFemale?"sie":"er")} eine Rolle in dem ${credit.type} ''${credit.getTitlePart()}''.`;}, "debut": false, "debuttype": false, "multiple": false, "type": "film"},
-            {"id": 19, get text() {return `${yearText} spielte ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' mit.`;}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 20, get text() {return `${yearText} stand ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debut||debuttype?"erstmals ":"")}für das Fernsehen vor der Kamera.`;}, "debut": null, "debuttype": null, "multiple": false, "type": "serie"},
-            {"id": 21, get text() {return `${yearText} war ${(useName?surname:isFemale?"sie":"er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' ${(debut?"erstmals ":"")}im Fernsehen zu sehen.`;}, "debut": null, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 22, get text() {return `${yearText} war ${(useName?surname:isFemale?"sie":"er")} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`;}, "debut": false, "debuttype": false, "multiple": true, "type": "serie"},
-            {"id": 23, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' hatte ${(useName?surname:isFemale?"sie":"er")} ${yearText} ${(debuttype?"erstmals ":"")}eine wiederkehrende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
-            {"id": 24, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' spielte ${(useName?surname:isFemale?"sie":"er")} ${yearText} ${(debuttype?"erstmals ":"")}eine durchgehende Rolle.`;}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 0, get text() {return `${(isFemale ? "Ihr" : "Sein")} Debüt als Schauspieler${(isFemale ? "in" : "")} hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": true, "debuttype": false, "multiple": false, "type": "serie"},
+            {"id": 1, get text() {return `${(isFemale ? "Ihren" : "Seinen")} ersten Auftritt absolvierte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 2, get text() {return `${(useName ? (surname + "s").replace(/ss$/,"s") : isFemale ? "Ihr" : "Sein")} erster Auftritt in einer ${credit.type} war ${yearText} in ''${credit.getTitlePart()}''.`}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
+            {"id": 2, get text() {return `${(useName ? (surname + "s").replace(/ss$/,"s") : isFemale ? "Ihr" : "Sein")} erster Auftritt in einem ${credit.type} war ${yearText} in ''${credit.getTitlePart()}''.`}, "debut": true, "debuttype": true, "multiple": false, "type": "film"},
+            {"id": 3, get text() {return `${(useName ? (surname + "s").replace(/ss$/,"s") : isFemale ? "Ihre" : "Seine")} erste wiederkehrende Rolle hatte ${(isFemale ? "sie" : "er")} ${yearText} in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": true, "multiple": true, "type": "serie"},
+            {"id": 4, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} hatte ${yearText} mit einem Gastauftritt in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale ? "ihr" : "sein")} Fernsehdebüt.`}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
+            {"id": 5, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} machte ${(isFemale ? "ihr" : "sein")} Fernsehdebüt ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 6, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} spielte ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype ? "erstmals " : "")}einen größeren Handlungsbogen.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 7, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} war ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 8, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} ${(isFemale ? "ihre" : "seine")} erste ${(credit.numberOfEpisodes > 1 ? "wiederkehrende " : "")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": true, "multiple": null, "type": "serie"},
+            {"id": 9, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} eine Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": false, "multiple": false, "type": "serie"},
+            {"id": 10, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype ? "erstmals " : "")}eine wiederkehrende Rolle.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 11, get text() {return `${yearText} erschien ${(useName ? surname : isFemale ? "sie" : "er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 12, get text() {return `${yearText} folgte ${(useName ? surname : isFemale ? "ihr" : "sein")} Spielfilmdebüt in dem ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": true, "multiple": false, "type": "film"},
+            {"id": 13, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${(isFemale ? "ihre" : "seine")} erste ${(credit.numberOfEpisodes > 1 ? "wiederkehrende " : "")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": null, "debuttype": true, "multiple": null, "type": "serie"},
+            {"id": 13, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${(isFemale ? "ihre" : "seine")} erste Filmrolle in ''${credit.getTitlePart()}''.`}, "debut": null, "debuttype": true, "multiple": false, "type": "film"},
+            {"id": 14, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} bei dem ${credit.type} ''${credit.getTitlePart()}'' ${debut ? "erstmals " : ""}eine Rolle inne.`}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
+            {"id": 15, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' eine Rolle inne.`}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 16, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} in dem ${credit.type} ''${credit.getTitlePart()}'' ${debut ? (isFemale ? "ihren " : "seinen ") + "ersten" : "einen"} Auftritt.`}, "debut": null, "debuttype": false, "multiple": false, "type": "film"},
+            {"id": 16, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale ? "ihren" : "seinen")} ersten Fernsehauftritt.`}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
+            {"id": 17, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} mit ${getEpisodeNumberText(credit.numberOfEpisodes)} in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale ? "ihr" : "sein")} Fernsehdebüt.`}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 18, get text() {return `${yearText} spielte ${(useName ? surname : isFemale ? "sie" : "er")} eine Rolle in dem ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": false, "multiple": false, "type": "film"},
+            {"id": 19, get text() {return `${yearText} spielte ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' mit.`}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 20, get text() {return `${yearText} stand ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debut || debuttype ? "erstmals " : "")}für das Fernsehen vor der Kamera.`}, "debut": null, "debuttype": null, "multiple": false, "type": "serie"},
+            {"id": 21, get text() {return `${yearText} war ${(useName ? surname : isFemale ? "sie" : "er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' ${(debut ? "erstmals " : "")}im Fernsehen zu sehen.`}, "debut": null, "debuttype": false, "multiple": null, "type": "serie"},
+            {"id": 22, get text() {return `${yearText} war ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`}, "debut": false, "debuttype": false, "multiple": true, "type": "serie"},
+            {"id": 23, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} ${(debuttype ? "erstmals " : "")}eine wiederkehrende Rolle.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 24, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' spielte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} ${(debuttype ? "erstmals " : "")}eine durchgehende Rolle.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
         ];
 
         let credit = {};
@@ -140,7 +138,7 @@
             creditList.push(0);
 
             //debut other type
-            let type = filmography[0].type.toLowerCase().endsWith("film")?"film":"serie";
+            let type = filmography[0].type.toLowerCase().endsWith("film") ? "film" : "serie";
             let cIndex = filmography.findIndex(i => !(i.type.toLowerCase().includes(type)));
             if (cIndex != -1){
                 creditList.push(cIndex);
@@ -158,16 +156,16 @@
         }
 
         //generate text from credits
-        creditList = [...new Set(creditList.sort((a,b)=>a-b))]; //remove duplicates, sort by index
+        creditList = [...new Set(creditList.sort((a,b)=>a - b))]; //remove duplicates, sort by index
         creditList.forEach((creditIndex, index) => {
             credit = filmography[creditIndex];
             yearText = credit.yearFrom;
             if (credit.yearFrom != credit.yearTo && credit.yearTo != 0){
-                yearText += ` bis ${credit.yearTo}`
+                yearText += ` bis ${credit.yearTo}`;
             }
             useName = !(index % 3);
             debut = creditIndex == 0;
-            debuttype = !debut && (filmography.find(i => i.type.toLowerCase().endsWith(credit.type.toLowerCase().endsWith("film")?"film":"serie")) == credit || filmography.find(i => i.numberOfEpisodes > 1) == credit);
+            debuttype = !debut && (filmography.find(i => i.type.toLowerCase().endsWith(credit.type.toLowerCase().endsWith("film") ? "film" : "serie")) == credit || filmography.find(i => i.numberOfEpisodes > 1) == credit);
             let possibleCreditTexts = careerTemplates.filter(i => (i.debut == debut || i.debut == null)
                                                              && (i.debuttype == debuttype || i.debuttype == null)
                                                              && credit.type.toLowerCase().includes(i.type)
@@ -220,21 +218,11 @@
         }
         return result + " Folgen";
     }
-    function getWikilinkFromItem(wikiItem){
-        let label = wikiItem.labels.de.value;
-        if (Object.values(wikiItem.sitelinks).length != 0)
-        {
-            let sitelink = wikiItem.sitelinks.dewiki.title;
-            return `[[${sitelink + (label == sitelink?"":`|${label}`)}]]`;
-        }
-        else
-        {
-            return label;
-        }
-    }
+
     function getPropFromItem(wikiItem,property){
         return wikiItem[property].de.value;
     }
+
     function getPropertyFromItem(wikiItem,property){
         let claims = wikiItem.claims[property];
         if (claims == undefined)
@@ -251,23 +239,7 @@
             return claims.map(i=>i.mainsnak.datavalue.value.id).join("|");
         }
     }
-    async function getWikilinksFromIds(ids){
-        let wikiItems = await getEntitiesFromIds(ids, "sitelinks|labels");
-        let items = wikiItems.map(wikiItem =>
-                                  {
-            let label = wikiItem.labels.de.value;
-            if (Object.values(wikiItem.sitelinks).length != 0)
-            {
-                let sitelink = wikiItem.sitelinks.dewiki.title;
-                return `[[${sitelink + (label == sitelink?"":`|${label}`)}]]`;
-            }
-            else
-            {
-                return label;
-            }
-        });
-        return items.slice(0, -1).join(", ")+(items.length!=1?" und ":"")+items.slice(-1);
-    }
+
     async function getWikidataIdFromPrompt(){
         let articleTitle = mw.config.get("wgTitle");
         let searchRequest = await GM.xmlHttpRequest({
@@ -290,9 +262,9 @@
                 }
             });
             let descriptionItems = JSON.parse(descriptionRequest.responseText);
-            filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length!=1);
+            filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length != 1);
             promptText = "Wähle den passenden Eintrag:\n";
-            promptText += filteredDescriptionItems.map((i,e) => (Number(e+1) + ": "+ (Object.keys(i.labels).length==0?"Unbekannt":i.labels.de.value) +" ("+(i.descriptions.de?.value??"")+")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
+            promptText += filteredDescriptionItems.map((i,e) => (Number(e + 1) + ": " + (Object.keys(i.labels).length == 0 ? "Unbekannt" : i.labels.de.value) + " (" + (i.descriptions.de?.value ?? "") + ")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
         }else{
             promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) direkt an:";
         }
@@ -300,8 +272,9 @@
         if (id.startsWith("Q")){
             return id;
         }
-        return filteredDescriptionItems[id-1].id;
+        return filteredDescriptionItems[id - 1].id;
     }
+
     async function getEntitiesFromIds(ids,props){
         let wikidataRequest = await GM.xmlHttpRequest({
             method: "GET",
@@ -318,6 +291,7 @@
             return results;
         }
     }
+
     async function ladeFilmografie(imdbid){
         var imdbRequest = await GM.xmlHttpRequest({
             method: "GET",
@@ -326,13 +300,13 @@
                 return response;
             }
         });
-        var html=document.createElement("div");
+        var html = document.createElement("div");
         html.innerHTML = imdbRequest.responseText;
-        html.querySelectorAll("link").forEach(i =>{i.href="";});
-        var occupation="actor,#filmo-head-actress";
-        var showShort=true;
-        var episodeLabel="Folge";
-        var showAlert=false;
+        html.querySelectorAll("link").forEach(i =>{i.href = ""});
+        var occupation = "actor,#filmo-head-actress";
+        var showShort = true;
+        var episodeLabel = "Folge";
+        var showAlert = false;
         var workSection = html.querySelector("#filmo-head-" + occupation);
         if (!workSection){
             workSection = html.querySelector("#filmography").firstElementChild;
@@ -345,7 +319,7 @@
             var credit = new Credit();
             var years = w.querySelector(".year_column").innerText.trim().split("/")[0].split("-");
             credit.yearFrom = years[0];
-            credit.yearTo = years[1]?years[1]:0;
+            credit.yearTo = years[1] ? years[1] : 0;
             credit.dt = w.querySelector("a").innerText.replace(" - ", " – ").replace("...", "…");
             var entry = w.innerHTML.split("</b>")[1];
             var creditType = entry.split("<br>")[0].replace(/\)?\n\(voice/,"").trim();
@@ -398,7 +372,7 @@
                 } else {
                     credit.episodeName = "";
                 }
-                credit.voice = (credit.numberOfEpisodes && voiceEpisodes > 0.9*credit.numberOfEpisodes); //add Sprechrolle if more than 90 % are credited as voice
+                credit.voice = (credit.numberOfEpisodes && voiceEpisodes > 0.9 * credit.numberOfEpisodes); //add Sprechrolle if more than 90 % are credited as voice
             } else {
                 credit.voice = (entry.split("<br>").length > 1 && entry.split("<br>")[1].includes("voice")) || (entry.split("\n").length > 1 && entry.split("\n")[1].includes("voice"));
             }
@@ -501,19 +475,19 @@
                         });
                         if (credit.imdbid == imdbid){ //get ot
                             var ot;
-                            if (htmlText.indexOf("Original title: ") != -1){
-                                ot = (/Original title: (.*?)<\/div/m).exec(htmlText)[1];
+                            if (htmlText.indexOf("Originaltitel: ") != -1){
+                                ot = (/Originaltitel: (.*?)<\/div/m).exec(htmlText)[1];
                             } else {
-                                ot = (/<title>(.*?) \([^\(]*?<\/title>/m).exec(htmlText)[1];
+                                ot = (/<title>(.*?) \([^(]*?<\/title>/m).exec(htmlText)[1];
                             }
                             var txt = document.createElement("textarea");
                             txt.innerHTML = ot;
                             ot = txt.value;
                             credit.ot = ot.replace("...", "…").replace(" - ", " – ");
                         } else if (credit.episodeName == imdbid){ //get episode name
-                            var episodeNumber = (/">S(\d+?)<!-- -->.<!-- -->E(\d+?)<\/div>/m).exec(htmlText);
+                            var episodeNumber = (/">S. (\d+?)<!-- -->.<!-- -->E. (\d+?)<\/div>/m).exec(htmlText);
                             if (episodeNumber !== null && episodeNumber.length == 3){
-                                credit.episodeName = episodeNumber[1]+"x"+(episodeNumber[2].length == 1?"0":"")+episodeNumber[2];
+                                credit.episodeName = episodeNumber[1] + "x" + (episodeNumber[2].length == 1 ? "0" : "") + episodeNumber[2];
                                 credit.episodeid = imdbid;
                                 getItemFromWikidata(imdbid);
                             } else {
@@ -602,7 +576,7 @@
                     descriptionPart += ` (''${this.ot}''`;
                 }
                 if (this.type){
-                    descriptionPart += (descriptionPart?", ":" (") + this.type;
+                    descriptionPart += (descriptionPart ? ", " : " (") + this.type;
                 }
                 if (!`${this.getYearPart()}`.startsWith("seit")){
                     if (this.numberOfEpisodes > 1){
@@ -614,9 +588,9 @@
                     }
                 }
                 if (this.voice){
-                    descriptionPart += (descriptionPart?", ":" (") + "Sprechrolle";
+                    descriptionPart += (descriptionPart ? ", " : " (") + "Sprechrolle";
                 }
-                descriptionPart += descriptionPart?")":"";
+                descriptionPart += descriptionPart ? ")" : "";
                 return descriptionPart;
             };
             this.toString = function(){
@@ -625,7 +599,7 @@
         }
         return new Promise(resolve => {
             var checkIfCompleted = setInterval(() => {
-                if (request === 0 || (done/request) != 1){
+                if (request === 0 || (done / request) != 1){
                     console.log("requests:",done,"/",request);
                 } else {
                     var formattedFilmography = "== Filmografie ==";
@@ -985,6 +959,6 @@
         });
         var obj = await resp.json();
         var result = obj.results.bindings;
-        return result.length && Object.keys(result[0]).length?result[0].source.value:"";
+        return result.length && Object.keys(result[0]).length ? result[0].source.value : "";
     }
 })();
