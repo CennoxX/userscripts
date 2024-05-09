@@ -2,7 +2,7 @@
 // @name         Edit Last.fm Scrobbles
 // @version      0.4.5
 // @description  Adds an "Edit scrobble" entry to the context menu of Last.fm
-// @author       CennoxX nicoleahmed
+// @author       CennoxX, nicoleahmed
 // @namespace    https://greasyfork.org/users/21515
 // @homepage     https://github.com/CennoxX/userscripts
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Edit%20Last.fm%20Scrobbles]%20
@@ -149,15 +149,11 @@
         var timestamp = trackinfo.querySelector('[name="timestamp"]').value;
         var oldTrack = encodeURIComponent(trackinfo.querySelector(".chartlistname > a").title);
         var oldArtist = encodeURIComponent(trackinfo.querySelector(".chartlistartist > a").title);
-
         if (artist.toLowerCase() == oldArtist.toLowerCase() && track.toLowerCase() == oldTrack.toLowerCase()) {
             removeInput(trackinfo);
-            throw new Error('Exiting script');
             return;
         }
         var data = "api_key=" + api_key + "&sk=" + sessionKey + "&method=track.scrobble&artist=" + artist + "&track=" + track + "&timestamp=" + timestamp;
-        console.log("data: " + data);
-
         GM.xmlHttpRequest({
             method: "POST",
             url: "https://ws.audioscrobbler.com/2.0/",
@@ -167,8 +163,7 @@
                 if (response.responseText.length > 0 && response.responseText.includes('<lfm status="ok">')) {
                     trackinfo.querySelector(".more-item--delete").click();
                     removeInput(trackinfo, artist, track);
-                    console.log("final url: " + response.finalUrl);
-                    setTimeout(function() {location.reload(true)}, 300)
+                    setTimeout(function() {location.reload(true)}, 300);
                 }
             },
             onerror: function(response) {
@@ -176,7 +171,6 @@
             }
         });
     }
-
 
     function removeInput(trackinfo, artist = null, track = null){
         trackinfo.style = "opacity: 1.0;";
@@ -201,18 +195,5 @@
         }
     }
 
-   function lfmmd5(f){
-    for(var k=[],i=0;64>i;)k[i]=0|4294967296*Math.sin(++i%Math.PI);
-    var c,d,e,h=[c=1732584193,d=4023233417,~c,~d],g=[],b=decodeURIComponent(f=f.split("&").sort().join("").replace(/=/g,"")+atob("ZmY4MmMzNTkzZWI3Zjg5OGMzMjhjZmIwN2JiNjk2ZWM="))+"\u0080",a=b.length;
-       console.log("b: " + b);
-    f=--a/4+2|15;
-    for(g[--f]=8*a;~a;)g[a>>2]|=b.charCodeAt(a)<<8*a--;
-    for(i=b=0;i<f;i+=16){
-        for(a=h;64>b;a=[e=a[3],c+((e=a[0]+[c&d|~c&e,e&c|~e&d,c^d^e,d^(c|~e)][a=b>>4]+k[b]+~~g[i|[b,5*b+1,3*b+5,7*b][a]&15])<<(a=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21][4*a+b++%4])|e>>>-a),c,d])c=a[1]|0,d=a[2];
-        for(b=4;b;)h[--b]+=a[b]
-    }
-    for(f="";32>b;)f+=(h[b>>3]>>4*(1^b++)&15).toString(16);
-    return f;
-    console.log("f: " + f);
-};
+    function lfmmd5(f){for(var k=[],i=0;64>i;)k[i]=0|4294967296*Math.sin(++i%Math.PI);var c,d,e,h=[c=1732584193,d=4023233417,~c,~d],g=[],b=decodeURIComponent(f=f.split("&").sort().join("").replace(/=/g,"")+atob("ZmY4MmMzNTkzZWI3Zjg5OGMzMjhjZmIwN2JiNjk2ZWM="))+"\u0080",a=b.length;f=--a/4+2|15;for(g[--f]=8*a;~a;)g[a>>2]|=b.charCodeAt(a)<<8*a--;for(i=b=0;i<f;i+=16){for(a=h;64>b;a=[e=a[3],c+((e=a[0]+[c&d|~c&e,e&c|~e&d,c^d^e,d^(c|~e)][a=b>>4]+k[b]+~~g[i|[b,5*b+1,3*b+5,7*b][a]&15])<<(a=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21][4*a+b++%4])|e>>>-a),c,d])c=a[1]|0,d=a[2];for(b=4;b;)h[--b]+=a[b]}for(f="";32>b;)f+=(h[b>>3]>>4*(1^b++)&15).toString(16);return f;};
 })();
