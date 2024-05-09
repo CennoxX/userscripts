@@ -152,23 +152,23 @@
 
         if (artist.toLowerCase() == oldArtist.toLowerCase() && track.toLowerCase() == oldTrack.toLowerCase()) {
             removeInput(trackinfo);
+            throw new Error('Exiting script');
             return;
         }
-        var data = "api_key=" + api_key + "&sk=" + sessionKey + "&method=track.scrobble&artist=" + artist.replace(/&/g, '%26') + "&track=" + track.replace(/&/g, '%26') + "&timestamp=" + timestamp;
-        var encodedData = "api_key=" + api_key + "&sk=" + sessionKey + "&method=track.scrobble&artist=" + artist + "&track=" + track + "&timestamp=" + timestamp;
+        var data = "api_key=" + api_key + "&sk=" + sessionKey + "&method=track.scrobble&artist=" + artist + "&track=" + track + "&timestamp=" + timestamp;
         console.log("data: " + data);
-        console.log("encodedData: " + encodedData);
 
         GM.xmlHttpRequest({
             method: "POST",
             url: "https://ws.audioscrobbler.com/2.0/",
             headers: {"Content-Type": "application/x-www-form-urlencoded"},
-            data: encodedData + "&api_sig=" + lfmmd5(data),
+            data: data + "&api_sig=" + lfmmd5(data),
             onload: function(response) {
                 if (response.responseText.length > 0 && response.responseText.includes('<lfm status="ok">')) {
                     trackinfo.querySelector(".more-item--delete").click();
                     removeInput(trackinfo, artist, track);
                     console.log("final url: " + response.finalUrl);
+                    setTimeout(function() {location.reload(true)}, 300)
                 }
             },
             onerror: function(response) {
@@ -185,7 +185,6 @@
         trackinfo.querySelector(".chartlist-buylinks").style = "display:initial";
         trackinfo.querySelector(".chartlist-more-button").style = "display:initial";
         trackinfo.querySelector(".chartlist-save").remove();
-        setTimeout(function() {location.reload(true)}, 1500);
     }
 
     function removeInputContainer(trackinfo, newInput, containerName){
@@ -203,18 +202,17 @@
     }
 
    function lfmmd5(f){
-    var f_replaced = f.replace(/%26/g, "&");
     for(var k=[],i=0;64>i;)k[i]=0|4294967296*Math.sin(++i%Math.PI);
     var c,d,e,h=[c=1732584193,d=4023233417,~c,~d],g=[],b=decodeURIComponent(f=f.split("&").sort().join("").replace(/=/g,"")+atob("ZmY4MmMzNTkzZWI3Zjg5OGMzMjhjZmIwN2JiNjk2ZWM="))+"\u0080",a=b.length;
        console.log("b: " + b);
-    f_replaced=--a/4+2|15;
-    for(g[--f_replaced]=8*a;~a;)g[a>>2]|=b.charCodeAt(a)<<8*a--;
-    for(i=b=0;i<f_replaced;i+=16){
+    f=--a/4+2|15;
+    for(g[--f]=8*a;~a;)g[a>>2]|=b.charCodeAt(a)<<8*a--;
+    for(i=b=0;i<f;i+=16){
         for(a=h;64>b;a=[e=a[3],c+((e=a[0]+[c&d|~c&e,e&c|~e&d,c^d^e,d^(c|~e)][a=b>>4]+k[b]+~~g[i|[b,5*b+1,3*b+5,7*b][a]&15])<<(a=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21][4*a+b++%4])|e>>>-a),c,d])c=a[1]|0,d=a[2];
         for(b=4;b;)h[--b]+=a[b]
     }
-    for(f_replaced="";32>b;)f_replaced+=(h[b>>3]>>4*(1^b++)&15).toString(16);
-    return f_replaced;
-    console.log("f_replaced: " + f_replaced);
+    for(f="";32>b;)f+=(h[b>>3]>>4*(1^b++)&15).toString(16);
+    return f;
+    console.log("f: " + f);
 };
 })();
