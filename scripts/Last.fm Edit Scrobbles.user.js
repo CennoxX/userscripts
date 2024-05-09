@@ -163,7 +163,7 @@
                 if (response.responseText.length > 0 && response.responseText.includes('<lfm status="ok">')) {
                     trackinfo.querySelector(".more-item--delete").click();
                     removeInput(trackinfo, artist, track);
-                    setTimeout(function() {location.reload(true)}, 300);
+                    setTimeout(function() {location.reload()}, 300);
                 }
             },
             onerror: function(response) {
