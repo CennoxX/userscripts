@@ -162,7 +162,7 @@
             onload: function(response) {
                 if (response.responseText.length > 0 && response.responseText.includes('<lfm status="ok">')) {
                     trackinfo.querySelector(".more-item--delete").click();
-                    removeInput(trackinfo, artist, track);
+                    removeInput(trackinfo, unescape(artist), unescape(track));
                     setTimeout(function() {location.reload()}, 300);
                 }
             },
