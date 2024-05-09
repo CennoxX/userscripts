@@ -23,6 +23,7 @@
     var api_key = "7bfc3993e87eb839bd1567bd2622dd56";
     var username = localStorage.getItem("username");
     var sessionKey = localStorage.getItem("sessionKey");
+    var isTrackPage = location.pathname.split("/")[location.pathname.split("/").indexOf("user") + 3] == "music";
     authenticate();
     reloadOnPageChange();
     addEditButtonToMenu();
@@ -71,8 +72,16 @@
         var observer = new MutationObserver(mutations => {
             if ((mutations?.[0]?.addedNodes?.[0]?.tagName == "TR") || oldChartlist != document.querySelector(".chartlist")) {
                 oldChartlist = document.querySelector(".chartlist");
-                if (!document.querySelector(".edit-selected-scrobbles-btn"))
+                if (!document.querySelector(".edit-selected-scrobbles-btn")){
                     main();
+                }
+                else if (!document.querySelector(".edit-selected-scrobbles-btn").onclick){
+                    var moreMenu = document.querySelectorAll(".chartlist-more-menu");
+                    moreMenu.forEach((menu) => {
+                        menu.querySelector(".edit-selected-scrobbles-btn")?.remove();
+                    });
+                    main();
+                }
             }
         });
         observer.observe(document.querySelector("body"), { childList: true, subtree: true });
@@ -88,7 +97,7 @@
             var editButton = document.createElement("button");
             var editIcon = document.createElement("img");
             editButton.className = "mimic-link dropdown-menu-clickable-item edit-selected-scrobbles-btn";
-            editButton.addEventListener("click", addInput);
+            editButton.onclick = addInput;
             editIcon.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABQElEQVQ4T5WSMS9EQRRGdxOFYolCI/EDlCQKjYROo1NQSAii1SusSqsTUVDQKRSKFRKFQkm5BZ2eQqHjnJc7ycvbeSv7kpM3c2e+796Zuc3GYN8k27dgGq7gujmAfoq9jzAMXZiDTQ3G4AhWY5w8XxnMxCSJ3WtMg3toaXAC23ABH6WK3hlfQlls9mM4hSfoaPDpWWAnc5wkdmkRdmEPfuAL5jX4hTYcVgyqYss29hJiDbt1BgssHsBo/G/5p5j3YLIbE+YMhog/g09WZInMvoBfihWTnIHPo8E6lC+xR1xnYOltmAAb5rySeYX5PhRPnKvA7LPgTbfgDZbjKGpSgqIJ6wzGWevAHTyEWRTyv0HaWPfvqaBfI+VMzgja9iPpCLbyBnjj5VbOiX1axfbFWjKwMXRdikvrd4TvENv2jht/CXpR/3sr35MAAAAASUVORK5CYII=";
             editIcon.style = "padding-right: 14px;";
             editButton.appendChild(editIcon);
@@ -101,7 +110,7 @@
     function addInput(){
         var editButton = this;
         var trackinfo = editButton.closest("tr");
-        addInputContainer(trackinfo, "artist");
+        addInputContainer(trackinfo, isTrackPage ? "album" : "artist");
         var nameContainer = addInputContainer(trackinfo, "name");
         nameContainer.style = "margin-left: 0.5em; margin-right: 8em;";
 
