@@ -165,6 +165,15 @@
                     removeInput(trackinfo, unescape(artist), unescape(track));
                     setTimeout(function() {location.reload()}, 300);
                 }
+				else if (response.responseText.includes('<error code="9">'))
+				{
+                    localStorage.removeItem("sessionKey");
+					authenticate();
+				}
+                else
+                {
+					console.log("Error from Last.fm: " + response.responseText);
+                }
             },
             onerror: function(response) {
                 console.log("Error in fetching contents: " + response.responseText);
