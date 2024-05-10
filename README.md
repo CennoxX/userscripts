@@ -29,6 +29,7 @@ Adds an "Edit scrobble" entry to the context menu of Last.fm
 <summary>details</summary>
 
 <!-- START ./docs/Edit Last.fm Scrobbles.md -->
+This script adds the ability to edit scrobbles on Last.fm, even if you don't have Last.fm PRO. It works as a combination of an authenticated Last.fm application to scrobble the corrected song – so you'll have to allow access to the Last.fm application (named "PlaylistLover") first – and JavaScript on the page to simulate a click on delete of the old song. This only works up to 14 days in the past.
 <!-- END ./docs/Edit Last.fm Scrobbles.md -->
 
 </details>
