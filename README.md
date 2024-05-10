@@ -22,6 +22,17 @@ keyboard hotkeys:<br />
 
 </details>
 
+###### [Edit Last.fm Scrobbles](https://greasyfork.org/de/scripts/485278-edit-last-fm-scrobbles)
+Adds an "Edit scrobble" entry to the context menu of Last.fm
+
+<details>
+<summary>details</summary>
+
+<!-- START ./docs/Edit Last.fm Scrobbles.md -->
+<!-- END ./docs/Edit Last.fm Scrobbles.md -->
+
+</details>
+
 ###### [Google tab paths](https://greasyfork.org/scripts/389426-google-tab-paths/)
 Use tabs to choose the Google search results
 
