@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.4.1
+// @version      1.5.0
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -10,7 +10,6 @@
 // @match        https://de.wikipedia.org/wiki/*?action=edit*
 // @connect      www.wikidata.org
 // @connect      www.imdb.com
-// @connect      resolve.eidr.org
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=de.wikipedia.org
 // @grant        GM.xmlHttpRequest
 // @grant        unsafeWindow
@@ -47,7 +46,7 @@
         syntaxButton?.click();
         isFemale = getPropertyFromItem(wikiItem,"P21").id == "Q6581072";
         surname = getPropFromItem(wikiItem,"labels").split(" ").pop();
-        filmographyText = await ladeFilmografie(imdbid);
+        filmographyText = await ladeFilmografie(imdbid, !isFemale);
         unsafeWindow.checkboxes = function(index = -1){
             setTimeout(()=>{
                 if (index != -1){
@@ -104,11 +103,11 @@
             {"id": 3, get text() {return `${(useName ? (surname + "s").replace(/ss$/,"s") : isFemale ? "Ihre" : "Seine")} erste wiederkehrende Rolle hatte ${(isFemale ? "sie" : "er")} ${yearText} in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": true, "multiple": true, "type": "serie"},
             {"id": 4, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} hatte ${yearText} mit einem Gastauftritt in der ${credit.type} ''${credit.getTitlePart()}'' ${(isFemale ? "ihr" : "sein")} Fernsehdebüt.`}, "debut": true, "debuttype": true, "multiple": false, "type": "serie"},
             {"id": 5, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} machte ${(isFemale ? "ihr" : "sein")} Fernsehdebüt ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": true, "debuttype": false, "multiple": null, "type": "serie"},
-            {"id": 6, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} spielte ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype ? "erstmals " : "")}einen größeren Handlungsbogen.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 6, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} spielte ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype ? "erstmals " : "")}einen größeren Handlungsbogen${(credit.role ? " als " + credit.role : "")}.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
             {"id": 7, get text() {return `${(useName ? surname : isFemale ? "Sie" : "Er")} war ${yearText} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 8, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} ${(isFemale ? "ihre" : "seine")} erste ${(credit.numberOfEpisodes > 1 ? "wiederkehrende " : "")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": true, "multiple": null, "type": "serie"},
             {"id": 9, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} eine Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": false, "multiple": false, "type": "serie"},
-            {"id": 10, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype ? "erstmals " : "")}eine wiederkehrende Rolle.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 10, get text() {return `${yearText} erhielt ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debuttype ? "erstmals " : "")}eine wiederkehrende Rolle${(credit.role ? " als " + credit.role : "")}.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
             {"id": 11, get text() {return `${yearText} erschien ${(useName ? surname : isFemale ? "sie" : "er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 12, get text() {return `${yearText} folgte ${(useName ? surname : isFemale ? "ihr" : "sein")} Spielfilmdebüt in dem ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": false, "debuttype": true, "multiple": false, "type": "film"},
             {"id": 13, get text() {return `${yearText} hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${(isFemale ? "ihre" : "seine")} erste ${(credit.numberOfEpisodes > 1 ? "wiederkehrende " : "")}Rolle in der ${credit.type} ''${credit.getTitlePart()}''.`}, "debut": null, "debuttype": true, "multiple": null, "type": "serie"},
@@ -123,8 +122,8 @@
             {"id": 20, get text() {return `${yearText} stand ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' ${(debut || debuttype ? "erstmals " : "")}für das Fernsehen vor der Kamera.`}, "debut": null, "debuttype": null, "multiple": false, "type": "serie"},
             {"id": 21, get text() {return `${yearText} war ${(useName ? surname : isFemale ? "sie" : "er")} in ${getEpisodeNumberText(credit.numberOfEpisodes)} der ${credit.type} ''${credit.getTitlePart()}'' ${(debut ? "erstmals " : "")}im Fernsehen zu sehen.`}, "debut": null, "debuttype": false, "multiple": null, "type": "serie"},
             {"id": 22, get text() {return `${yearText} war ${(useName ? surname : isFemale ? "sie" : "er")} in der ${credit.type} ''${credit.getTitlePart()}'' zu sehen.`}, "debut": false, "debuttype": false, "multiple": true, "type": "serie"},
-            {"id": 23, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} ${(debuttype ? "erstmals " : "")}eine wiederkehrende Rolle.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
-            {"id": 24, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' spielte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} ${(debuttype ? "erstmals " : "")}eine durchgehende Rolle.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 23, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' hatte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} ${(debuttype ? "erstmals " : "")}eine wiederkehrende Rolle${(credit.role ? " als " + credit.role : "")}.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
+            {"id": 24, get text() {return `In der ${credit.type} ''${credit.getTitlePart()}'' spielte ${(useName ? surname : isFemale ? "sie" : "er")} ${yearText} in ${getEpisodeNumberText(credit.numberOfEpisodes)} ${(debuttype ? "erstmals " : "")}eine durchgehende Rolle${(credit.role ? " als " + credit.role : "")}.`}, "debut": false, "debuttype": null, "multiple": true, "type": "serie"},
         ];
 
         let credit = {};
@@ -292,92 +291,90 @@
         }
     }
 
-    async function ladeFilmografie(imdbid){
-        var imdbRequest = await GM.xmlHttpRequest({
+    async function ladeFilmografie(imdbId, isMale){
+        var showShort = true;
+        var episodeLabel = "Folge";
+        var showAlert = false;
+        var sha256 = {
+            loadActor: "4faf04583fbf1fbc7a025e5dffc7abc3486e9a04571898a27a5a1ef59c2965f3",
+            loadActress: "0cf092f3616dbc56105327bf09ec9f486d5fc243a1d66eb3bf791fda117c5079",
+            loadEpisodeActor: "4cda84f556104467ecebd3c8911671f85c4d8a8f7877d7a95bfa814e2d3da4fc",
+            loadEpisodeActress: "5d6728cf6dfa5f1df8b3ead8076d2b61035c7c3dfb0e5b8e2e286a01c9aa5199"
+        };
+        var request = 0;
+        var done = 0;
+
+        var resp = await GM.xmlHttpRequest({
+            url: `https://caching.graphql.imdb.com/?operationName=NameMainFilmographyPaginatedCredits&variables={"after":"${btoa("nm0000001/tt0000001/actor")}","id":"${imdbId}","includeUserRating":false,"locale":"en-US"}&extensions={"persistedQuery":{"sha256Hash":"${(isMale ? sha256.loadActor : sha256.loadActress)}","version":1}}`,
             method: "GET",
-            url: `https://www.imdb.com/name/${imdbid}/fullcredits`,
+            headers: {
+                "Content-Type": "application/json",
+                "x-imdb-user-country": "DE"
+            },
             onload: function(response) {
                 return response;
             }
         });
-        var html = document.createElement("div");
-        html.innerHTML = imdbRequest.responseText;
-        html.querySelectorAll("link").forEach(i =>{i.href = ""});
-        var occupation = "actor,#filmo-head-actress";
-        var showShort = true;
-        var episodeLabel = "Folge";
-        var showAlert = false;
-        var workSection = html.querySelector("#filmo-head-" + occupation);
-        if (!workSection){
-            workSection = html.querySelector("#filmography").firstElementChild;
-        }
-        var work = workSection.nextElementSibling.children;
-        var request = 0;
-        var done = 0;
-
-        [...work].forEach(w => {
+        var workObj = JSON.parse(resp.responseText);
+        var work = workObj.data.name[(isMale ? "actor_credits" : "actress_credits")].edges.map(i => i.node);
+        for(var w of work){
             var credit = new Credit();
-            var years = w.querySelector(".year_column").innerText.trim().split("/")[0].split("-");
-            credit.yearFrom = years[0];
-            credit.yearTo = years[1] ? years[1] : 0;
-            credit.dt = w.querySelector("a").innerText.replace(" - ", " – ").replace("...", "…");
-            var entry = w.innerHTML.split("</b>")[1];
-            var creditType = entry.split("<br>")[0].replace(/\)?\n\(voice/,"").trim();
-            if (creditType.includes("in_production") || creditType.includes("Video Game")){
-                return;
+            credit.yearFrom = w.episodeCredits.yearRange?.year ?? w.title.releaseYear.year;
+            credit.yearTo = w.episodeCredits.yearRange ? w.episodeCredits.yearRange.endYear ?? 0 : 0;
+            credit.dt = w.title.titleText.text.replace(" - ", " – ").replace("...", "…");
+            credit.ot = w.title.originalTitleText.text.replace(" - ", " – ").replace("...", "…");
+            var creditType = w.title.titleType.text;
+            if (creditType == "Video Game"){
+                continue;
             }
             credit.type = creditType
-                .replace(/\(Documentary short\)/, "Dokumentar-Kurzfilm")
-                .replace(/\((TV Movie d|D)ocumentary\)/, "Dokumentarfilm")
-                .replace(/\(TV Series short\)/, "Webserie")
-                .replace(/\(TV Series( documentary)?\)/, "Fernsehserie")
-                .replace(/\(TV Mini Series( documentary)?\)/, "Miniserie")
-                .replace(/\(TV Movie\)/, "Fernsehfilm")
-                .replace(/\((Video s|TV S|TV Mini Series s|S)hort\)/, "Kurzfilm")
-                .replace(/ ?\(.*\)/, "").split("\n")[0]; //strip everything else
-
-            if (!showShort || credit.type.includes("Kurzfilm")){
-                return;
+                .replace(/Documentary short/, "Dokumentar-Kurzfilm")
+                .replace(/(TV Movie d|D)ocumentary/, "Dokumentarfilm")
+                .replace(/TV Series short/, "Webserie")
+                .replace(/TV Series( documentary)?/, "Fernsehserie")
+                .replace(/TV Mini Series( documentary)?/, "Miniserie")
+                .replace(/TV Movie/, "Fernsehfilm")
+                .replace(/(Video s|TV S|TV Mini Series s|S)hort/, "Kurzfilm")
+                .replace(/(Movie|Music Video|Video)/, "");
+            if (!showShort && credit.type.includes("Kurzfilm")){
+                continue;
             }
-            credit.imdbid = w.getAttribute("id").split("-")[1];
+            credit.imdbid = w.title.id;
+            credit.voice = w.attributes?.[0].text == "voice";
+            credit.role = w.characters?.[0].name;
+            filmography.push(credit);
             getItemFromWikidata(credit.imdbid);
             if (credit.type.includes("serie")){
-                var voiceEpisodes = 0;
-                var allEpisodes = w.querySelectorAll(".filmo-episodes");
-                var isYearFromEmpty = !credit.yearFrom;
-                allEpisodes.forEach(episode => {
-                    if (episode.innerText.includes("credit only") || episode.innerText == "Show less"){
-                        return;
-                    }
-                    if (isYearFromEmpty){
-                        var from = episode.innerHTML.split("\n")[2].match(/\((\d{4})\)/);
-                        if (from){
-                            credit.yearFrom = from[1];
-                        }
-                    }
-                    if (!credit.yearTo){
-                        var to = episode.innerHTML.split("\n")[2].match(/\((\d{4})\)/);
-                        if (to){
-                            credit.yearTo = to[1];
-                        }
-                    }
-                    credit.numberOfEpisodes++;
-                    credit.episodeName = episode.querySelector("a").href.split("/")[4];
-                    if (episode.innerText.includes("voice")){
-                        voiceEpisodes++;
+                credit.numberOfEpisodes = w.episodeCredits.total;
+                request++;
+                resp = await GM.xmlHttpRequest({
+                    url: `https://caching.graphql.imdb.com/?operationName=EpisodeBottomSheetCast&variables={"after":"","episodeCreditsFilter":{},"locale":"de-DE","nameId":"${imdbId}","titleId":"${credit.imdbid}"}&extensions={"persistedQuery":{"sha256Hash":"${(isMale ? sha256.loadEpisodeActor : sha256.loadEpisodeActress)}","version":1}}`,
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-imdb-user-country": "DE"
+                    },
+                    onload: function(response) {
+                        return response;
                     }
                 });
-                if (credit.numberOfEpisodes == 1){
-                    getDataFromIMDb(credit.episodeName);
-                } else {
-                    credit.episodeName = "";
+                var epData = JSON.parse(resp.responseText);
+                done++;
+                var ep = epData.data.name.credits.edges[0]?.node;
+                if (ep){
+                    credit.numberOfEpisodes = ep.episodeCredits.edges.filter(i => i.node.attributes?.[0]?.text != "credit only").length;
+                    if (credit.numberOfEpisodes == 1){
+                        var epCredit = ep.episodeCredits.edges[0].node.title;
+                        credit.episodeid = epCredit.id;
+                        if (epCredit.series.displayableEpisodeNumber.episodeNumber.text != "unknown")
+                            credit.episodeName = (epCredit.series.displayableEpisodeNumber.displayableSeason.text + "x" + epCredit.series.displayableEpisodeNumber.episodeNumber.text).replace(/x(\d)$/,"x0$1");
+                        getItemFromWikidata(credit.episodeid);
+                    } else {
+                        credit.episodeName = "";
+                    }
                 }
-                credit.voice = (credit.numberOfEpisodes && voiceEpisodes > 0.9 * credit.numberOfEpisodes); //add Sprechrolle if more than 90 % are credited as voice
-            } else {
-                credit.voice = (entry.split("<br>").length > 1 && entry.split("<br>")[1].includes("voice")) || (entry.split("\n").length > 1 && entry.split("\n")[1].includes("voice"));
             }
-            filmography.push(credit);
-        });
+        }
 
         filmography = filmography.reverse().sort((a,b) => {
             return a.yearFrom - b.yearFrom;
@@ -403,8 +400,6 @@
                                 credit.episodeid = wikidataid;
                             }
                             getDataFromWikidata(wikidataid);
-                        } else if (credit.imdbid == imdbid){
-                            getDataFromEIDR(imdbid);
                         }
                     }
                 },
@@ -437,9 +432,7 @@
                                 credit.dt = jsonObj.labels.de.value;
                             }
                             if (typeof jsonObj.claims.P1476 != "undefined"){ //check if OT of entity exists
-                                credit.ot = jsonObj.claims.P1476[0].mainsnak.datavalue.value.text.replace(/'/g,"’");
-                            } else {
-                                getDataFromEIDR(credit.imdbid);//get OT
+                                credit.ot = jsonObj.claims.P1476[0].mainsnak.datavalue.value.text.replace(/'/g, "’");
                             }
                         } else if (credit.episodeid == wikidataid){ //get episode name
                             if (typeof jsonObj.sitelinks.dewiki != "undefined"){ //wikipedia article
@@ -451,79 +444,6 @@
                             } else if (typeof jsonObj.labels.de != "undefined"){ //wikidata label
                                 credit.episodeName += ` ''${jsonObj.labels.de.value}''`;
                             }
-                        }
-                    }
-                },
-                onerror: function(response){
-                    done++;
-                    console.log("Error in fetching contents: " + response.responseText);
-                }
-            });
-        }
-
-        function getDataFromIMDb(imdbid){
-            request++;
-            GM.xmlHttpRequest({
-                method: "GET",
-                url: "https://www.imdb.com/title/" + imdbid,
-                onload: function(response){
-                    done++;
-                    var htmlText = response.responseText;
-                    if (htmlText.length > 0){
-                        var credit = filmography.find(c => {
-                            return c.imdbid == imdbid || c.episodeName == imdbid;
-                        });
-                        if (credit.imdbid == imdbid){ //get ot
-                            var ot;
-                            if (htmlText.indexOf("Originaltitel: ") != -1){
-                                ot = (/Originaltitel: (.*?)<\/div/m).exec(htmlText)[1];
-                            } else {
-                                ot = (/<title>(.*?) \([^(]*?<\/title>/m).exec(htmlText)[1];
-                            }
-                            var txt = document.createElement("textarea");
-                            txt.innerHTML = ot;
-                            ot = txt.value;
-                            credit.ot = ot.replace("...", "…").replace(" - ", " – ");
-                        } else if (credit.episodeName == imdbid){ //get episode name
-                            var episodeNumber = (/">S. (\d+?)<!-- -->.<!-- -->E. (\d+?)<\/div>/m).exec(htmlText);
-                            if (episodeNumber !== null && episodeNumber.length == 3){
-                                credit.episodeName = episodeNumber[1] + "x" + (episodeNumber[2].length == 1 ? "0" : "") + episodeNumber[2];
-                                credit.episodeid = imdbid;
-                                getItemFromWikidata(imdbid);
-                            } else {
-                                credit.episodeName = "";
-                            }
-                        }
-                    }
-                },
-                onerror: function(response){
-                    done++;
-                    console.log("Error in fetching contents: " + response.responseText);
-                }
-            });
-        }
-        function getDataFromEIDR(imdbid){
-            request++;
-            GM.xmlHttpRequest({
-                method: "GET",
-                url: "https://resolve.eidr.org/EIDR/object/?altId=" + imdbid + "&altidType=IMDB",
-                onload: function(response){
-                    done++;
-                    var htmlText = response.responseText;
-                    if (htmlText.length > 0){
-                        var parser = new DOMParser();
-                        var xmlDoc = parser.parseFromString(htmlText, "text/xml");
-                        var credit = filmography.find(c => {
-                            return c.imdbid == imdbid || c.episodeName == imdbid;
-                        });
-                        //get ot
-                        if (htmlText.indexOf("ResourceName") != -1){
-                            var ot = xmlDoc.querySelector("ResourceName").innerHTML;
-                            credit.ot = ot.replace("&amp;", "&").replace("...", "…").replace(" - ", " – ");
-                        }
-                        else
-                        {
-                            getDataFromIMDb(imdbid);
                         }
                     }
                 },
@@ -588,7 +508,11 @@
                     }
                 }
                 if (this.voice){
-                    descriptionPart += (descriptionPart ? ", " : " (") + "Sprechrolle";
+                    if (this.role){
+                        descriptionPart += (descriptionPart ? ", " : " (") + "Stimme von ''" + this.role + "''";
+                    }else{
+                        descriptionPart += (descriptionPart ? ", " : " (") + "Sprechrolle";
+                    }
                 }
                 descriptionPart += descriptionPart ? ")" : "";
                 return descriptionPart;
@@ -599,9 +523,9 @@
         }
         return new Promise(resolve => {
             var checkIfCompleted = setInterval(() => {
-                if (request === 0 || (done / request) != 1){
+                if ((done / request) != 1){
                     console.log("requests:",done,"/",request);
-                } else {
+                } else if (request != 0){
                     var formattedFilmography = "== Filmografie ==";
                     filmography.forEach(entry => {
                         formattedFilmography += entry.toString();
