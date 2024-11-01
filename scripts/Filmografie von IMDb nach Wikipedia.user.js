@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      3.0.0
+// @version      3.0.1
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -67,7 +67,7 @@
             for(var w of work){
                 var credit = new Credit();
                 credit.yearFrom = w.episodeCredits.yearRange?.year ?? w.title.releaseYear.year;
-                credit.yearTo = w.episodeCredits.yearRange ? w.episodeCredits.yearRange.endYear : 0;
+                credit.yearTo = w.episodeCredits.yearRange ? w.episodeCredits.yearRange.endYear ?? 0 : 0;
                 credit.dt = w.title.titleText.text.replace(" - ", " – ").replace("...", "…");
                 credit.ot = w.title.originalTitleText.text.replace(" - ", " – ").replace("...", "…");
                 var creditType = w.title.titleType.text;
@@ -88,9 +88,7 @@
                 }
                 credit.imdbid = w.title.id;
                 credit.voice = w.attributes?.[0].text == "voice";
-                if (credit.voice && w.characters?.[0].name){
-                    credit.voice = w.characters?.[0].name;
-                }
+                credit.role = w.characters?.[0].name;
                 filmography.push(credit);
                 getItemFromWikidata(credit.imdbid);
                 if (credit.type.includes("serie")){
@@ -253,8 +251,8 @@
                         }
                     }
                     if (this.voice){
-                        if (typeof this.voice == "string"){
-                            descriptionPart += (descriptionPart ? ", " : " (") + "Stimme von ''" + this.voice + "''";
+                        if (this.role){
+                            descriptionPart += (descriptionPart ? ", " : " (") + "Stimme von ''" + this.role + "''";
                         }else{
                             descriptionPart += (descriptionPart ? ", " : " (") + "Sprechrolle";
                         }
