@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.6.0
+// @version      1.6.1
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -9,7 +9,6 @@
 // @match        https://de.wikipedia.org/w/index.php?title=*&action=edit*
 // @match        https://de.wikipedia.org/wiki/*?action=edit*
 // @connect      wikidata.org
-// @connect      www.wikidata.org
 // @connect      www.imdb.com
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=de.wikipedia.org
 // @grant        GM.xmlHttpRequest
