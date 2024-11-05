@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.5.0
+// @version      1.6.0
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -15,8 +15,8 @@
 // @grant        unsafeWindow
 // @license      MIT
 // ==/UserScript==
-/* jshint esversion: 10 */
-/* globals mw */
+/* jshint esversion: 11 */
+/* globals mw $ */
 
 (async()=>{
     "use strict";
@@ -155,7 +155,7 @@
         }
 
         //generate text from credits
-        creditList = [...new Set(creditList.sort((a,b)=>a - b))]; //remove duplicates, sort by index
+        creditList = [...new Set(creditList.sort((a,b) => a - b))]; //remove duplicates, sort by index
         creditList.forEach((creditIndex, index) => {
             credit = filmography[creditIndex];
             yearText = credit.yearFrom;
@@ -174,6 +174,7 @@
         });
         return careerText.trim();
     }
+
     function getEpisodeNumberText(number){
         var result;
         switch(number){
@@ -319,7 +320,10 @@
         var work = workObj.data.name[(isMale ? "actor_credits" : "actress_credits")].edges.map(i => i.node);
         for(var w of work){
             var credit = new Credit();
-            credit.yearFrom = w.episodeCredits.yearRange?.year ?? w.title.releaseYear.year;
+            credit.yearFrom = w.episodeCredits.yearRange?.year ?? w.title.releaseYear?.year;
+            if (!credit.yearFrom){
+                continue;
+            }
             credit.yearTo = w.episodeCredits.yearRange ? w.episodeCredits.yearRange.endYear ?? 0 : 0;
             credit.dt = w.title.titleText.text.replace(" - ", " – ").replace("...", "…");
             credit.ot = w.title.originalTitleText.text.replace(" - ", " – ").replace("...", "…");
@@ -343,36 +347,8 @@
             credit.voice = w.attributes?.[0].text == "voice";
             credit.role = w.characters?.[0].name;
             filmography.push(credit);
-            getItemFromWikidata(credit.imdbid);
             if (credit.type.includes("serie")){
-                credit.numberOfEpisodes = w.episodeCredits.total;
-                request++;
-                resp = await GM.xmlHttpRequest({
-                    url: `https://caching.graphql.imdb.com/?operationName=EpisodeBottomSheetCast&variables={"after":"","episodeCreditsFilter":{},"locale":"de-DE","nameId":"${imdbId}","titleId":"${credit.imdbid}"}&extensions={"persistedQuery":{"sha256Hash":"${(isMale ? sha256.loadEpisodeActor : sha256.loadEpisodeActress)}","version":1}}`,
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-imdb-user-country": "DE"
-                    },
-                    onload: function(response) {
-                        return response;
-                    }
-                });
-                var epData = JSON.parse(resp.responseText);
-                done++;
-                var ep = epData.data.name.credits.edges[0]?.node;
-                if (ep){
-                    credit.numberOfEpisodes = ep.episodeCredits.edges.filter(i => i.node.attributes?.[0]?.text != "credit only").length;
-                    if (credit.numberOfEpisodes == 1){
-                        var epCredit = ep.episodeCredits.edges[0].node.title;
-                        credit.episodeid = epCredit.id;
-                        if (epCredit.series.displayableEpisodeNumber.episodeNumber.text != "unknown")
-                            credit.episodeName = (epCredit.series.displayableEpisodeNumber.displayableSeason.text + "x" + epCredit.series.displayableEpisodeNumber.episodeNumber.text).replace(/x(\d)$/,"x0$1");
-                        getItemFromWikidata(credit.episodeid);
-                    } else {
-                        credit.episodeName = "";
-                    }
-                }
+                getDataFromIMDb(credit.imdbid, "");
             }
         }
 
@@ -380,78 +356,98 @@
             return a.yearFrom - b.yearFrom;
         });
 
-        function getItemFromWikidata(imdbid){
+        function getDataFromIMDb(titleId, page){
             request++;
             GM.xmlHttpRequest({
                 method: "GET",
-                url: "https://www.wikidata.org/w/api.php?action=query&format=json&list=search&srsearch=haswbstatement:P345=" + imdbid,
+                url: `https://caching.graphql.imdb.com/?operationName=EpisodeBottomSheetCast&variables={"after":"${page}","episodeCreditsFilter":{},"locale":"de-DE","nameId":"${imdbId}","titleId":"${titleId}"}&extensions={"persistedQuery":{"sha256Hash":"${(isMale ? sha256.loadEpisodeActor : sha256.loadEpisodeActress)}","version":1}}`,
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-imdb-user-country": "DE"
+                },
                 onload: function(response){
                     done++;
-                    if (response.responseText.length > 0){
-                        var jsonObj = JSON.parse(response.responseText);
+                    var respText = response.responseText;
+                    if (respText.length > 0){
+                        var jsonObj = JSON.parse(respText);
                         var credit = filmography.find(c => {
-                            return c.imdbid == imdbid || c.episodeid == imdbid;
+                            return c.imdbid == titleId;
                         });
-                        if (jsonObj.query.searchinfo.totalhits > 0){
-                            var wikidataid = jsonObj.query.search[0].title;
-                            if (credit.imdbid == imdbid){
-                                credit.link = wikidataid;
-                            } else {
-                                credit.episodeid = wikidataid;
+                        var ep = jsonObj.data.name.credits.edges[0]?.node;
+                        if (credit && ep){
+                            credit.numberOfEpisodes += ep.episodeCredits.edges.filter(i => i.node.attributes?.[0]?.text != "credit only").length;
+                            if (ep.episodeCredits.pageInfo.hasNextPage){
+                                getDataFromIMDb(titleId, ep.episodeCredits.pageInfo.endCursor);
                             }
-                            getDataFromWikidata(wikidataid);
+                            if (credit.numberOfEpisodes == 1){
+                                var epCredit = ep.episodeCredits.edges[0].node.title;
+                                credit.episodeid = epCredit.id;
+                                if (epCredit.series.displayableEpisodeNumber.episodeNumber.text != "unknown"){
+                                    credit.episodeName = (epCredit.series.displayableEpisodeNumber.displayableSeason.text + "x" + epCredit.series.displayableEpisodeNumber.episodeNumber.text).replace(/x(\d)$/,"x0$1");
+                                }
+                            } else {
+                                credit.episodeName = "";
+                            }
                         }
                     }
                 },
                 onerror: function(response){
                     done++;
-                    console.log("Error in fetching contents: " + response.responseText);
+                    console.error("Error in fetching contents: " + response.responseText);
                 }
             });
         }
 
-        function getDataFromWikidata(wikidataid){
+        async function getDataFromWikidata(){
             request++;
-            GM.xmlHttpRequest({
-                method: "GET",
-                url: "https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&props=sitelinks|claims|labels&sitefilter=dewiki&ids=" + wikidataid,
-                onload: function(response){
-                    done++;
-                    if (response.responseText.length > 0){
-                        var jsonObj = Object.values(JSON.parse(response.responseText).entities)[0];
-                        var credit = filmography.find(c => {
-                            return c.link == wikidataid || c.episodeid == wikidataid;
-                        });
-                        if (credit.link == wikidataid){ //get dt, ot, link
-                            if (typeof jsonObj.sitelinks.dewiki != "undefined"){ //wikipedia article
-                                credit.link = jsonObj.sitelinks.dewiki.title;
-                            } else {
-                                credit.link = "";
-                            }
-                            if (typeof jsonObj.labels.de != "undefined"){ //wikidata label
-                                credit.dt = jsonObj.labels.de.value;
-                            }
-                            if (typeof jsonObj.claims.P1476 != "undefined"){ //check if OT of entity exists
-                                credit.ot = jsonObj.claims.P1476[0].mainsnak.datavalue.value.text.replace(/'/g, "’");
-                            }
-                        } else if (credit.episodeid == wikidataid){ //get episode name
-                            if (typeof jsonObj.sitelinks.dewiki != "undefined"){ //wikipedia article
-                                var article = jsonObj.sitelinks.dewiki.title;
-                                if (article.slice(-1) == ")"){
-                                    article += `|${article.split(" (")[0]}`;
-                                }
-                                credit.episodeName += ` ''[[${article}]]''`;
-                            } else if (typeof jsonObj.labels.de != "undefined"){ //wikidata label
-                                credit.episodeName += ` ''${jsonObj.labels.de.value}''`;
-                            }
-                        }
-                    }
+            var imdbIds = filmography.flatMap(i => [i.episodeid, i.imdbid]).filter(i => i).join('" "');
+            var sparqlQuery = `SELECT ?imdb ?dt (SAMPLE(?ot) AS ?ot) ?dewiki WHERE {
+                VALUES ?imdb { "${imdbIds}" }
+                ?item wdt:P345 ?imdb.
+                OPTIONAL {
+                    ?item rdfs:label ?dt.
+                    FILTER((LANG(?dt)) = "de")
+                }
+                OPTIONAL {
+                    ?item wdt:P1476 ?ot.
+                }
+                OPTIONAL {
+                    ?dewiki schema:about ?item;
+                            schema:isPartOf <https://de.wikipedia.org/>.
+                }
+            }
+            GROUP BY ?imdb ?dt ?dewiki`;
+            var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
+                "headers": {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
                 },
-                onerror: function(response){
-                    done++;
-                    console.log("Error in fetching contents: " + response.responseText);
+                "body": "query=" + encodeURIComponent(sparqlQuery),
+                "method": "POST",
+                "mode": "cors"
+            });
+            var jsonObj = await resp.json();
+            jsonObj.results.bindings.forEach(i => {
+                var credit = filmography.find(c => c.imdbid == i.imdb.value);
+                i.dewiki = i.dewiki ? decodeURIComponent(i.dewiki.value).slice(30).replace(/_/g," ") : "";
+                if (credit){
+                    credit.link = i.dewiki;
+                    credit.dt = i.dt?.value || credit.dt;
+                    credit.ot = i.ot?.value.replace(/'/g, '’') || credit.ot;
+                }
+                var episodeCredit = filmography.find(c => c.episodeid == i.imdb.value);
+                if (episodeCredit){
+                    if (i.dewiki){
+                        var article = i.dewiki;
+                        if (article.slice(-1) == ")"){
+                            article += `|${article.split(" (")[0]}`;
+                        }
+                        episodeCredit.episodeName += ` ''[[${article}]]''`;
+                    } else if (i.dt){
+                        episodeCredit.episodeName += ` ''${i.dt?.value}''`;
+                    }
                 }
             });
+            done++;
         }
 
         function Credit(){
@@ -509,7 +505,7 @@
                 }
                 if (this.voice){
                     if (this.role){
-                        descriptionPart += (descriptionPart ? ", " : " (") + "Stimme von ''" + this.role + "''";
+                        descriptionPart += (descriptionPart ? ", " : " (") + "Stimme von ''" + this.role.split(" (")[0] + "''";
                     }else{
                         descriptionPart += (descriptionPart ? ", " : " (") + "Sprechrolle";
                     }
@@ -522,10 +518,11 @@
             };
         }
         return new Promise(resolve => {
-            var checkIfCompleted = setInterval(() => {
+            var checkIfCompleted = setInterval(async () => {
                 if ((done / request) != 1){
                     console.log("requests:",done,"/",request);
-                } else if (request != 0){
+                } else if (request != 0) {
+                    await getDataFromWikidata();
                     var formattedFilmography = "== Filmografie ==";
                     filmography.forEach(entry => {
                         formattedFilmography += entry.toString();
@@ -542,6 +539,7 @@
             }, 1000);
         });
     }
+
     async function getArticleFromSPARQL(wikidataId){
         var personSparqlRequest = `SELECT DISTINCT ?source WHERE {
   #lade Person
