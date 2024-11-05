@@ -8,6 +8,7 @@
 // @supportURL   https://github.com/CennoxX/userscripts/issues/new?title=[Wikipedia%20Artikel%20Generator]%20
 // @match        https://de.wikipedia.org/w/index.php?title=*&action=edit*
 // @match        https://de.wikipedia.org/wiki/*?action=edit*
+// @connect      wikidata.org
 // @connect      www.wikidata.org
 // @connect      www.imdb.com
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=de.wikipedia.org
@@ -417,7 +418,7 @@
                 }
             }
             GROUP BY ?imdb ?dt ?dewiki`;
-            var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
+            var resp = await fetch("https://query-main.wikidata.org/sparql?format=json", {
                 "headers": {
                     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
                 },
