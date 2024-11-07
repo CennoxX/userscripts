@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      4.0.2
+// @version      4.1.0
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -78,6 +78,9 @@
                 var creditType = w.title.titleType.text;
                 if (creditType == "Video Game"){
                     continue;
+                }
+                if (creditType == "Video" && w.title.titleGenres.genres.some(i => i.genre.text == "Short")){
+                    creditType = "Kurzfilm";
                 }
                 credit.type = creditType
                     .replace(/Documentary short/, "Dokumentar-Kurzfilm")
