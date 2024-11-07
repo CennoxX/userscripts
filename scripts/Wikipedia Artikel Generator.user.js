@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.6.1
+// @version      1.6.2
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -330,6 +330,9 @@
             var creditType = w.title.titleType.text;
             if (creditType == "Video Game"){
                 continue;
+            }
+            if (creditType == "Video" && w.title.titleGenres.genres.some(i => i.genre.text == "Short")){
+                creditType = "Kurzfilm";
             }
             credit.type = creditType
                 .replace(/Documentary short/, "Dokumentar-Kurzfilm")
