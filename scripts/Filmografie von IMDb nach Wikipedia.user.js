@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      4.1.0
+// @version      4.2.0
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -76,7 +76,7 @@
                 credit.dt = w.title.titleText.text.replace(" - ", " – ").replace("...", "…");
                 credit.ot = w.title.originalTitleText.text.replace(" - ", " – ").replace("...", "…");
                 var creditType = w.title.titleType.text;
-                if (creditType == "Video Game"){
+                if (creditType == "Video Game" || creditType == "Podcast Series"){
                     continue;
                 }
                 if (creditType == "Video" && w.title.titleGenres.genres.some(i => i.genre.text == "Short")){
@@ -134,7 +134,9 @@
                                     var epCredit = ep.episodeCredits.edges[0].node.title;
                                     credit.episodeid = epCredit.id;
                                     if (epCredit.series.displayableEpisodeNumber.episodeNumber.text != "unknown"){
-                                        credit.episodeName = (epCredit.series.displayableEpisodeNumber.displayableSeason.text + "x" + epCredit.series.displayableEpisodeNumber.episodeNumber.text).replace(/x(\d)$/,"x0$1");
+                                        var season = epCredit.series.displayableEpisodeNumber.displayableSeason.text;
+                                        var episode = epCredit.series.displayableEpisodeNumber.episodeNumber.text;
+                                        credit.episodeName = ((season == "1" && episode.length > 3 ? "" : season + "x") + episode).replace(/x(\d)$/,"x0$1");
                                     }
                                 } else {
                                     credit.episodeName = "";
