@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      4.2.0
+// @version      4.2.1
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -73,8 +73,8 @@
                     continue;
                 }
                 credit.yearTo = w.episodeCredits.yearRange ? w.episodeCredits.yearRange.endYear ?? 0 : 0;
-                credit.dt = w.title.titleText.text.replace(" - ", " – ").replace("...", "…");
-                credit.ot = w.title.originalTitleText.text.replace(" - ", " – ").replace("...", "…");
+                credit.dt = w.title.titleText.text;
+                credit.ot = w.title.originalTitleText.text;
                 var creditType = w.title.titleType.text;
                 if (creditType == "Video Game" || creditType == "Podcast Series"){
                     continue;
@@ -185,7 +185,7 @@
                     if (credit){
                         credit.link = i.dewiki;
                         credit.dt = i.dt?.value || credit.dt;
-                        credit.ot = i.ot?.value.replace(/'/g, '’') || credit.ot;
+                        credit.ot = i.ot?.value || credit.ot;
                     }
                     var episodeCredit = filmography.find(c => c.episodeid == i.imdb.value);
                     if (episodeCredit){
@@ -207,7 +207,7 @@
                 this.numberOfEpisodes = 0;
                 this.episodeid = "";
                 this.formatTitle = function(title = ""){
-                    return title.replace(/[-–:., \d’'!]/g, "").toLowerCase();
+                    return title.replace(/[-–:., \d’'!…]/g, "").toLowerCase();
                 };
                 this.compareTitles = function(titleA,titleB){
                     return this.formatTitle(titleA) == this.formatTitle(titleB);
@@ -226,6 +226,7 @@
                     return `${this.yearFrom}–${this.yearTo}`;
                 };
                 this.getTitlePart = function(){
+                    this.dt = this.dt.replace(" - ", " – ").replace("...", "…").replace(/'/g, "’");
                     if (!this.link){
                         return this.dt;
                     }
@@ -237,6 +238,7 @@
                     return `[[${this.link}]]`;
                 };
                 this.getDescriptionPart = function(){
+                    this.ot = this.ot.replace(" - ", " – ").replace("...", "…").replace(/'/g, "’");
                     if (!this.compareTitles(this.ot, this.dt) && !this.type && !this.voice){
                         return ` ''(${this.ot})''`;
                     }
