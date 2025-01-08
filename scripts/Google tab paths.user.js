@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Google tab paths
-// @version      0.7.2
+// @version      0.8.0
 // @description  Use tabs to choose the Google search results
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -11,18 +11,7 @@
 // @grant        none
 // @license      MIT
 // ==/UserScript==
-/* jshint esversion: 10 */
-/* eslint quotes: ['warn', 'single', {'avoidEscape': true}] */
-/* eslint curly: 'off' */
-
-var result = document.querySelectorAll('.yuRUbf>a');
-for (var i = 0; i < result.length; i++) {
-    result[i].tabIndex = i+1;
-}
-document.querySelector('[role="link"]').tabIndex = -1;
-document.querySelector('[role="link"]').nextElementSibling.tabIndex = -1;
-document.querySelector('[role="link"]').nextElementSibling.nextElementSibling.childNodes[2].tabIndex = -1;
-var nextLink = document.querySelector('#pnnext');
-if (nextLink){
-    nextLink.tabIndex = i + 2;
-}
+/* jshint esversion: 11 */
+var results = document.querySelectorAll("a:has(h3:not(#PP76df h3)");
+results.forEach((el, i) => el.tabIndex = i + 1);
+(document.querySelector("#pnnext") ?? {}).tabIndex = results.length + 1;
