@@ -12,6 +12,6 @@
 // @license      MIT
 // ==/UserScript==
 /* jshint esversion: 11 */
-var results = document.querySelectorAll("a:has(h3:not(#PP76df h3)");
+var results = document.querySelectorAll("a:has(h3:not(.bCOlv h3))");
 results.forEach((el, i) => el.tabIndex = i + 1);
 (document.querySelector("#pnnext") ?? {}).tabIndex = results.length + 1;
