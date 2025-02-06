@@ -70,19 +70,6 @@ This script redirects to the last.fm-page of the own language, if it is availabl
 
 </details>
 
-###### [Google Tasks Desktop](https://greasyfork.org/scripts/429123-google-tasks-desktop/)
-Changes the appearance of fullscreen-for-googletasks.com to resemble tasks.google.com
-
-<details>
-<summary>details</summary>
-
-<!-- START ./docs/Google Tasks Desktop.md -->
-Remove the yellowish theme of fullscreen-for-googletasks.com and change the colors to the ones at tasks.google.com.
-
-<!-- END ./docs/Google Tasks Desktop.md -->
-
-</details>
-
 ###### [JSON-LD from IMDb to QuickStatements](https://greasyfork.org/scripts/377488-json-ld-from-imdb-to-quickstatements/)
 Gets data from JSON-LD of IMDb to QuickStatements, to publish it on Wikidata
 
