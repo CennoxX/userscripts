@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikidata Episode Generator
-// @version      0.13.1
+// @version      0.13.2
 // @description  Creates QuickStatements for Wikidata episode items from Wikipedia episode lists
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -363,7 +363,7 @@ LAST	P1113	${ep.NR_ST}	${source}
         return output;
     }
     async function GetSparqlResponse(request){
-        var resp = await fetch("https://query.wikidata.org/sparql?format=json", {
+        var resp = await fetch("https://query-main.wikidata.org/sparql?format=json", {
             "headers": {
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                 "Accept": "application/sparql-results+json"
@@ -575,7 +575,7 @@ data from Fernsehserien.de: #${matchedEp?.nr ?? 0} / ${matchedEp.epNr} ${matched
             });
             var parser = new DOMParser();
             var xmlDoc = parser.parseFromString(response.responseText,"text/html");
-            imdbIds = imdbIds.concat([...xmlDoc.querySelectorAll(".ipc-metadata-list-summary-item .dli-ep-title")].map(i => {return {"title": i.innerText, "id": i.firstChild.href.split("/")[4], "nr": i.parentElement.parentElement.querySelector(".dli-title").innerText.split(".")[0]}}));
+            imdbIds = imdbIds.concat([...xmlDoc.querySelectorAll(".ipc-metadata-list-summary-item .dli-ep-title")].map(i => {return {"title": i.innerText, "id": i.firstChild.href.match(/tt\d+/)?.[0], "nr": i.parentElement.parentElement.querySelector(".dli-title").innerText.split(".")[0]}}));
             allEps = 250;
             startEp = startEp + 250;
         } while (imdbIds.length < allEps);
