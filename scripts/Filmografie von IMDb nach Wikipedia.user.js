@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Filmografie von IMDb nach Wikipedia
-// @version      4.2.2
+// @version      4.2.3
 // @description  Wandelt die Filmografie von IMDb mithilfe von Wikidata in Wikipedia-Quelltext um
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -23,10 +23,10 @@
 (function(){
     "use strict";
     var sha256 = {
-        loadActor: "4faf04583fbf1fbc7a025e5dffc7abc3486e9a04571898a27a5a1ef59c2965f3",
-        loadActress: "0cf092f3616dbc56105327bf09ec9f486d5fc243a1d66eb3bf791fda117c5079",
-        loadEpisodeActor: "4cda84f556104467ecebd3c8911671f85c4d8a8f7877d7a95bfa814e2d3da4fc",
-        loadEpisodeActress: "5d6728cf6dfa5f1df8b3ead8076d2b61035c7c3dfb0e5b8e2e286a01c9aa5199"
+        loadActor: "7ed0c54ec0a95c77fde16a992d918034e8ff37dfc79934b49d8276fa40361aa2",
+        loadActress: "e514283c305a9580f246a87d6b492695244bac357b9bf4c8b9f7c9f68abcfc1d",
+        loadEpisodeActor: "92997ef1786794b3340a89a6fb1a01bd29233c36c414df2bbee3c9cb6cb2de09",
+        loadEpisodeActress: "16cb70dca5f908eb5e474305045f4e440a6d3b61913ecf53e78b1e6275e67772"
     };
     unsafeWindow.ladeFilmografie = function(showShort = true, episodeLabel = "Folge", showAlert = false){
         setTimeout(async() =>{
