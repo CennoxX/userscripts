@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.6.2
+// @version      1.6.3
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -16,7 +16,7 @@
 // @license      MIT
 // ==/UserScript==
 /* jshint esversion: 11 */
-/* globals mw $ */
+/* globals mw */
 
 (async()=>{
     "use strict";
@@ -58,7 +58,7 @@
                     reloadCareerText();
                 }
                 var filmographyLineNumber = wikiText.substring(0, filmographyStart).split("\n").length + (creditList.length == 0 ? 0 : 2);
-                var lines = [...document.querySelectorAll(".CodeMirror-lines .noime div div div")];
+                var lines = [...document.querySelectorAll(".cm-lineNumbers .cm-gutterElement:not(:first-child)")];
                 lines.slice(filmographyLineNumber,filmography.length + filmographyLineNumber)
                     .forEach(c => {c.innerHTML = "<input type='checkbox' onclick='checkboxes(" + Number(c.innerHTML - filmographyLineNumber - 1) + ")'/>"});
                 creditList.forEach(i => {lines[filmographyLineNumber + i].querySelector("input").checked = true});
@@ -297,10 +297,10 @@
         var episodeLabel = "Folge";
         var showAlert = false;
         var sha256 = {
-            loadActor: "4faf04583fbf1fbc7a025e5dffc7abc3486e9a04571898a27a5a1ef59c2965f3",
-            loadActress: "0cf092f3616dbc56105327bf09ec9f486d5fc243a1d66eb3bf791fda117c5079",
-            loadEpisodeActor: "4cda84f556104467ecebd3c8911671f85c4d8a8f7877d7a95bfa814e2d3da4fc",
-            loadEpisodeActress: "5d6728cf6dfa5f1df8b3ead8076d2b61035c7c3dfb0e5b8e2e286a01c9aa5199"
+            loadActor: "7ed0c54ec0a95c77fde16a992d918034e8ff37dfc79934b49d8276fa40361aa2",
+            loadActress: "e514283c305a9580f246a87d6b492695244bac357b9bf4c8b9f7c9f68abcfc1d",
+            loadEpisodeActor: "92997ef1786794b3340a89a6fb1a01bd29233c36c414df2bbee3c9cb6cb2de09",
+            loadEpisodeActress: "16cb70dca5f908eb5e474305045f4e440a6d3b61913ecf53e78b1e6275e67772"
         };
         var request = 0;
         var done = 0;
@@ -435,7 +435,7 @@
                 if (credit){
                     credit.link = i.dewiki;
                     credit.dt = i.dt?.value || credit.dt;
-                    credit.ot = i.ot?.value.replace(/'/g, '’') || credit.ot;
+                    credit.ot = i.ot?.value.replace(/'/g, "’") || credit.ot;
                 }
                 var episodeCredit = filmography.find(c => c.episodeid == i.imdb.value);
                 if (episodeCredit){
