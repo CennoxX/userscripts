@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.6.5
+// @version      1.6.6
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -53,7 +53,7 @@
                 if (index != -1){
                     if (creditList.includes(index)){
                         creditList = creditList.filter(c => c != index);
-                    }else{
+                    } else {
                         creditList.push(index);
                     }
                     reloadCareerText();
@@ -79,7 +79,7 @@
         span.innerHTML = '<span class="tool oo-ui-buttonElement oo-ui-buttonElement-frameless oo-ui-iconElement"><a class="oo-ui-buttonElement-button" title="Karriere-Text neu generieren" tabindex="0"><span class="oo-ui-iconElement-icon oo-ui-icon-reload"></span></a></span>';
         elem.appendChild(span);
         span.addEventListener("click", () => reloadCareerText(false));
-    }else{
+    } else {
         $("#wpTextbox1").textSelection("setSelection", {start: filmographyStart - 2, end: filmographyEnd});
         $("#wpTextbox1").textSelection("replaceSelection", "");
     }
@@ -269,10 +269,11 @@
             filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length != 1);
             promptText = "Wähle den passenden Eintrag:\n";
             promptText += filteredDescriptionItems.map((i,e) => (Number(e + 1) + ": " + (Object.keys(i.labels).length == 0 ? "Unbekannt" : i.labels.de.value) + " (" + (i.descriptions.de?.value ?? "") + ")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
-        }else{
+            promptText += "\nAlternativ kann ein Wikidata-Bezeichner (Q…) direkt angegeben werden.";
+        } else {
             promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) direkt an:";
         }
-        let id = prompt(promptText);
+        let id = prompt(promptText, filteredDescriptionItems.length == 1 ? "1" : "");
         if (id.startsWith("Q")){
             return id;
         }
@@ -291,7 +292,7 @@
         let results = Object.values(item.entities);
         if (results.length == 0){
             return "";
-        }else{
+        } else {
             return results;
         }
     }
@@ -513,7 +514,7 @@
                 if (this.voice){
                     if (this.role){
                         descriptionPart += (descriptionPart ? ", " : " (") + "Stimme von ''" + this.role.split(" (")[0] + "''";
-                    }else{
+                    } else {
                         descriptionPart += (descriptionPart ? ", " : " (") + "Sprechrolle";
                     }
                 }
