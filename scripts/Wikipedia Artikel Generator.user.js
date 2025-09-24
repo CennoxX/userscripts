@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Wikipedia Artikel Generator
-// @version      1.6.4
+// @version      1.6.5
 // @description  Erstellt Grundgerüste für Wikipedia-Artikel von Personen aus Wikidata-Daten
 // @author       CennoxX
 // @namespace    https://greasyfork.org/users/21515
@@ -24,6 +24,7 @@
         return;
     }
     var wikiText = "";
+    var checkboxesSet = false;
     var wikidataId = await getWikidataIdFromPrompt();
     $("#wpTextbox1").textSelection("setContents", "Lädt ...");
     let wikiItem = (await getEntitiesFromIds(wikidataId,"sitelinks|claims|labels|aliases|descriptions"))[0];
@@ -59,8 +60,11 @@
                 }
                 var filmographyLineNumber = wikiText.substring(0, filmographyStart).split("\n").length + (creditList.length == 0 ? 0 : 2);
                 var lines = [...document.querySelectorAll(".cm-lineNumbers .cm-gutterElement:not(:first-child)")];
-                lines.slice(filmographyLineNumber,filmography.length + filmographyLineNumber)
-                    .forEach(c => {c.innerHTML = "<input type='checkbox' onclick='checkboxes(" + Number(c.innerHTML - filmographyLineNumber - 1) + ")'/>"});
+                if (!checkboxesSet){
+                    checkboxesSet = true;
+                    lines.slice(filmographyLineNumber,filmography.length + filmographyLineNumber)
+                        .forEach(c => {c.innerHTML = "<input type='checkbox' onclick='checkboxes(" + Number(c.innerHTML - filmographyLineNumber - 1) + ")'/>"});
+                }
                 creditList.forEach(i => {lines[filmographyLineNumber + i].querySelector("input").checked = true});
             },100);
         };
