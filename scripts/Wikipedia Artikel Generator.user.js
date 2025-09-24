@@ -269,7 +269,7 @@
             filteredDescriptionItems = Object.values(descriptionItems.entities).filter(i => Object.values(i.sitelinks).length != 1);
             promptText = "Wähle den passenden Eintrag:\n";
             promptText += filteredDescriptionItems.map((i,e) => (Number(e + 1) + ": " + (Object.keys(i.labels).length == 0 ? "Unbekannt" : i.labels.de.value) + " (" + (i.descriptions.de?.value ?? "") + ")").replace("((","(").replace("))",")").replace(" ()","")).join("\n");
-            promptText += "\nAlternativ kann ein Wikidata-Bezeichner (Q…) direkt angegeben werden.";
+            promptText += "\n\nAlternativ kann ein Wikidata-Bezeichner (Q…) direkt angegeben werden.";
         } else {
             promptText = "Kein passender Eintrag auf Wikidata gefunden.\nBitte gib den Wikidata-Bezeichner (Q…) direkt an:";
         }
