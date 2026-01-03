@@ -280,17 +280,24 @@
         modal.querySelector(".modal-track-input").focus();
         
         // Event handlers
+        var modalClosed = false;
         var handleKeydown = function(e) {
+            if (modalClosed) return;
             if (e.key === "Escape") {
                 closeModal();
             } else if (e.key === "Enter" && e.target.tagName === "INPUT") {
-                modal.querySelector(".modal-save-btn").click();
+                var saveBtn = modal.querySelector(".modal-save-btn");
+                if (saveBtn) saveBtn.click();
             }
         };
         
         var closeModal = function() {
+            if (modalClosed) return;
+            modalClosed = true;
             document.removeEventListener("keydown", handleKeydown);
-            document.body.removeChild(overlay);
+            if (overlay.parentNode) {
+                document.body.removeChild(overlay);
+            }
         };
         
         modal.querySelector(".modal-close").addEventListener("click", closeModal);
@@ -357,7 +364,7 @@
             data += "&album=" + encodedAlbum;
         }
         if (albumArtist) {
-            data += "&albumArtist=" + encodedAlbumArtist;
+            data += "&albumartist=" + encodedAlbumArtist;
         }
         
         GM.xmlHttpRequest({
