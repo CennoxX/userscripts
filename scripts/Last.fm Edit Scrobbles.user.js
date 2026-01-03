@@ -113,8 +113,14 @@
         });
     }
     
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
     function fetchTrackInfo(artist, track, callback) {
-        var data = "api_key=" + api_key + "&method=track.getInfo&artist=" + encodeURIComponent(artist) + "&track=" + encodeURIComponent(track) + "&username=" + username;
+        var data = "api_key=" + api_key + "&method=track.getInfo&artist=" + encodeURIComponent(artist) + "&track=" + encodeURIComponent(track) + "&username=" + encodeURIComponent(username);
         GM.xmlHttpRequest({
             method: "GET",
             url: "https://ws.audioscrobbler.com/2.0/?" + data + "&format=json",
@@ -141,13 +147,6 @@
     }
     
     function showEditModal(trackinfo, track, artist, album, albumArtist, timestamp) {
-        // Helper function to escape HTML
-        function escapeHtml(text) {
-            var div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
         // Create modal overlay
         var overlay = document.createElement("div");
         overlay.style = `
@@ -285,7 +284,7 @@
             if (modalClosed) return;
             if (e.key === "Escape") {
                 closeModal();
-            } else if (e.key === "Enter" && e.target.tagName === "INPUT") {
+            } else if (e.key === "Enter" && e.target.tagName && e.target.tagName.toUpperCase() === "INPUT") {
                 var saveBtn = modal.querySelector(".modal-save-btn");
                 if (saveBtn) saveBtn.click();
             }
