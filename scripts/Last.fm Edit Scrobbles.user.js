@@ -141,6 +141,13 @@
     }
     
     function showEditModal(trackinfo, track, artist, album, albumArtist, timestamp) {
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
         // Create modal overlay
         var overlay = document.createElement("div");
         overlay.style = `
@@ -189,7 +196,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Track</label>
-                <input type="text" class="modal-track-input" value="${track.replace(/"/g, '&quot;')}" style="
+                <input type="text" class="modal-track-input" value="${escapeHtml(track)}" style="
                     width: 100%;
                     padding: 8px;
                     border: 1px solid #ddd;
@@ -200,7 +207,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Artist</label>
-                <input type="text" class="modal-artist-input" value="${artist.replace(/"/g, '&quot;')}" style="
+                <input type="text" class="modal-artist-input" value="${escapeHtml(artist)}" style="
                     width: 100%;
                     padding: 8px;
                     border: 1px solid #ddd;
@@ -211,7 +218,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Album</label>
-                <input type="text" class="modal-album-input" value="${album.replace(/"/g, '&quot;')}" style="
+                <input type="text" class="modal-album-input" value="${escapeHtml(album)}" style="
                     width: 100%;
                     padding: 8px;
                     border: 1px solid #ddd;
@@ -222,7 +229,7 @@
             </div>
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-weight: 600; margin-bottom: 6px;">Album Artist</label>
-                <input type="text" class="modal-albumartist-input" value="${albumArtist.replace(/"/g, '&quot;')}" style="
+                <input type="text" class="modal-albumartist-input" value="${escapeHtml(albumArtist)}" style="
                     width: 100%;
                     padding: 8px;
                     border: 1px solid #ddd;
@@ -239,7 +246,7 @@
                     border-radius: 4px;
                     color: #666;
                     font-size: 14px;
-                ">${formatTimestamp(timestamp)}</div>
+                ">${escapeHtml(formatTimestamp(timestamp))}</div>
             </div>
             <div style="text-align: center;">
                 <button class="modal-cancel-btn" style="
@@ -273,7 +280,16 @@
         modal.querySelector(".modal-track-input").focus();
         
         // Event handlers
+        var handleKeydown = function(e) {
+            if (e.key === "Escape") {
+                closeModal();
+            } else if (e.key === "Enter" && e.target.tagName === "INPUT") {
+                modal.querySelector(".modal-save-btn").click();
+            }
+        };
+        
         var closeModal = function() {
+            document.removeEventListener("keydown", handleKeydown);
             document.body.removeChild(overlay);
         };
         
@@ -286,19 +302,10 @@
             var newAlbum = modal.querySelector(".modal-album-input").value;
             var newAlbumArtist = modal.querySelector(".modal-albumartist-input").value;
             
-            scrobbleSong(trackinfo, newTrack, newArtist, newAlbum, newAlbumArtist, timestamp, track, artist);
+            scrobbleSong(trackinfo, newTrack, newArtist, newAlbum, newAlbumArtist, timestamp, track, artist, album, albumArtist);
             closeModal();
         });
         
-        // Close on Escape key
-        var handleKeydown = function(e) {
-            if (e.key === "Escape") {
-                closeModal();
-                document.removeEventListener("keydown", handleKeydown);
-            } else if (e.key === "Enter" && e.target.tagName === "INPUT") {
-                modal.querySelector(".modal-save-btn").click();
-            }
-        };
         document.addEventListener("keydown", handleKeydown);
         
         // Close on overlay click
@@ -329,9 +336,12 @@
         return `${dayName} ${day} ${month} ${year}, ${hours}:${minutes}${ampm}`;
     }
 
-    function scrobbleSong(trackinfo, track, artist, album, albumArtist, timestamp, oldTrack, oldArtist){
+    function scrobbleSong(trackinfo, track, artist, album, albumArtist, timestamp, oldTrack, oldArtist, oldAlbum, oldAlbumArtist){
         // Check if anything changed
-        if (artist.toLowerCase() == oldArtist.toLowerCase() && track.toLowerCase() == oldTrack.toLowerCase()) {
+        if (artist.toLowerCase() == oldArtist.toLowerCase() && 
+            track.toLowerCase() == oldTrack.toLowerCase() &&
+            album.toLowerCase() == (oldAlbum || "").toLowerCase() &&
+            albumArtist.toLowerCase() == (oldAlbumArtist || "").toLowerCase()) {
             return;
         }
         
